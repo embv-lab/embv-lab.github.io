@@ -1,0 +1,37 @@
+# Contexto para Claude Code
+
+Web pública, sólo de consulta, del laboratorio de la Escuela Modelo de Bella Vista (EMBV):
+https://embv-lab.github.io/ (GitHub Pages, rama `main`, raíz). Responsable: el ayudante de
+laboratorio. Idioma: castellano rioplatense, con voseo.
+
+Leer primero `README.md`, `PRODUCT.md` (a quién sirve) y `DESIGN.md` (sistema visual: señalética
+de seguridad). La dirección de diseño acordada está en `.impeccable/briefs/index.md`.
+
+## Reglas
+
+- **Los enlaces de los QR no cambian:** `#E1-4` … `#E2-9`, `#CAJA-RE`, `#MATERIAL`, `#R001` …
+  `#R117`, `#emergencia`, `#aprender/<lección>`. Están impresos en los carteles del estante.
+- **Los datos químicos no se editan acá.** `datos/reactivos.json` se genera en el repositorio
+  privado `WiseMKT/embv-laboratorio` (fuente única: `fuentes/datos_reactivos.py`, exportada con
+  `pagina/export.py`). Ver `docs/WEB_PUBLICA.md` de ese repositorio.
+- **Repositorio público:** nunca agregar datos personales, fotos ni documentos del repositorio
+  privado.
+- Lo que muestra la web tiene que coincidir con la etiqueta y la ficha impresas.
+- Los colores de seguridad (verde, rojo, amarillo, azul) significan algo: no usarlos de adorno.
+- En cada cambio de archivos, subir `CACHE` en `sw.js` (`embv-v4` → `embv-v5`) y, si cambian los
+  datos, `ACTUALIZADO` en `app.js`. Si se agrega un archivo, sumarlo a `ARCHIVOS` en `sw.js`.
+- `_config.yml` excluye de la publicación los archivos de trabajo (`README.md`, `PRODUCT.md`,
+  `DESIGN.md`, `CLAUDE.md`, `herramientas/`, `.impeccable/`).
+
+## Probar
+
+En la PC del trabajo no hay Python ni Node. Servidor local:
+`powershell -ExecutionPolicy Bypass -File herramientas\servir.ps1` → http://localhost:8765/.
+Sin la extensión de Chrome, Edge headless sirve para verificar: `msedge --headless=new
+--dump-dom <url>` (ejecuta el JavaScript) y `--screenshot` (la ventana no baja de unos 500 px de
+ancho: para ver el celular, cargar la página en un iframe de 390 px).
+
+## Publicar
+
+`git push` a `main`; GitHub Pages publica en uno o dos minutos. Verificar con `curl` que los
+archivos servidos coincidan con los del repositorio.

@@ -3,4 +3,6 @@ exclude:
   - README.md
   - PRODUCT.md
   - DESIGN.md
+  - CLAUDE.md
+  - herramientas
   - .impeccable

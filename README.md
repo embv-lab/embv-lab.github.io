@@ -61,7 +61,17 @@ ya impresos siguen andando.
   para que los celulares que ya la abrieron descarguen la versión nueva.
 
 Para probarla en la compu hace falta un servidor local, porque abrir `index.html` con doble clic no
-carga los datos. Por ejemplo, `python -m http.server` en esta carpeta.
+carga los datos: `python -m http.server` en esta carpeta, o sin Python,
+`powershell -ExecutionPolicy Bypass -File herramientas\servir.ps1`. Después, abrir http://localhost:8765/.
+
+## Pendiente
+
+- **QR en los carteles:** se agregan en el repositorio privado (`fuentes/gen_carteles.py`) con los
+  enlaces de la tabla de arriba.
+- Sumar un segundo dueño a la organización `embv-lab`.
+- Automatizar la copia de `datos/reactivos.json` desde el repositorio privado.
+- La lista completa y vigente está en `docs/revisiones/2026-10-20-web-publica.md` del repositorio
+  privado.
 
 ## Datos
 
