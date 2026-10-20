@@ -58,6 +58,12 @@ El tema sigue al sistema (`prefers-color-scheme`).
   NFPA, teléfonos, placa verde de primeros auxilios con control segmentado por vía (Ojos, Piel,
   Inhalación, Ingestión), placas amarilla (derrame) y roja (fuego), placa azul (protección), peligros,
   "No guardar junto a", dónde se guarda, y lo técnico plegado.
+- **Aprender:** índice como lista de placas con ícono por lección y barra de progreso verde. Cada
+  lección tiene un enlace propio (`#aprender/etiqueta`, `…/pictogramas`, `…/rombo`, `…/juntos`,
+  `…/reglas`, `…/evaluacion`). La etiqueta interactiva es blanca en los dos temas (es el papel del
+  frasco), con siete partes numeradas en azul; la activa se enmarca y el resto se atenúa. El rombo
+  grande tiene cuadrantes tocables que crecen al elegirlos. Las respuestas correctas van en verde y
+  las incorrectas en rojo. El progreso se guarda en el navegador.
 - **Prohibición:** señal de prohibición dibujada (círculo y diagonal rojos) + texto.
 - **Navegación:** barra inferior de 3 pestañas en el celular (Reactivos, Estante, Emergencia); arriba
   en pantallas anchas, con el botón rojo Emergencia a la derecha.

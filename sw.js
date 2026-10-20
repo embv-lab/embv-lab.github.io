@@ -2,8 +2,8 @@
 // Así una actualización de las fichas se ve apenas hay conexión, y el QR sigue
 // abriendo la página aunque el celular esté sin datos.
 // Al cambiar la lista de archivos, subir el número de CACHE.
-const CACHE = "embv-v3";
-const ARCHIVOS = ["./", "index.html", "estilos.css", "app.js", "iconos.svg", "logo.svg", "manifest.webmanifest", "datos/reactivos.json"];
+const CACHE = "embv-v4";
+const ARCHIVOS = ["./", "index.html", "estilos.css", "app.js", "aprender.js", "iconos.svg", "logo.svg", "manifest.webmanifest", "datos/reactivos.json"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARCHIVOS)).then(() => self.skipWaiting()));

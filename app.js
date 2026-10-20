@@ -2,6 +2,8 @@
 // Los datos vienen de datos/reactivos.json, que exporta pagina/export.py del
 // repositorio privado. No editar datos químicos acá.
 
+import { crearAprender } from "./aprender.js";
+
 // Fecha de los datos que trae esta versión. Actualizarla al reemplazar el JSON.
 const ACTUALIZADO = "19/10/2026";
 
@@ -31,7 +33,7 @@ const SEC_AVISO = {
 };
 const VIA_ICON = {"Ojos":"eye", "Piel":"hand-palm", "Inhalación":"wind", "Ingestión":"fork-knife"};
 
-let view = "reactivos", curSec = null;
+let view = "reactivos", curSec = null, curLec = null;
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -260,10 +262,17 @@ function renderEsearch(){
     : placa("rojo", "warning", "No está en el inventario", `<p>Si no se sabe qué es, tratarlo como peligroso: avisar, alejarse y llamar al <b>107</b>.</p>`);
 }
 
+// ---------- aprender ----------
+const aprender = crearAprender({D, R, RI, $, esc, icon, picto, nfpa, sig, placa, may, secLabel, claseStyle, claro, SEP});
+// Cada lección tiene su propio enlace (#aprender/etiqueta…) y entra al historial: "atrás" vuelve al índice.
+const irLeccion = id => { location.hash = id ? "#aprender/" + id : "#aprender"; };
+document.addEventListener("keydown", e => aprender.tecla(e, irLeccion));
+
 // ---------- eventos ----------
 document.addEventListener("click", e => {
+  if (aprender.click(e, irLeccion)) return;
   const go = e.target.closest("[data-go]"); if (go){ setView(go.dataset.go); return; }
-  const vb = e.target.closest("[data-v]"); if (vb){ setView(vb.dataset.v); return; }
+  const vb = e.target.closest("[data-v]"); if (vb){ if (vb.dataset.v === "aprender") curLec = null; setView(vb.dataset.v); return; }
   const rb = e.target.closest("[data-r]"); if (rb){ e.preventDefault(); openFicha(rb.dataset.r); return; }
   if (e.target.closest("[data-close]")){ closeFicha(); return; }
   const via = e.target.closest("[data-via]"); if (via){ cambiarVia(via.dataset.via); return; }
@@ -283,8 +292,8 @@ $("#btn-sos").addEventListener("click", () => setView("emergencia"));
 $("#eq").addEventListener("input", renderEsearch);
 
 // ---------- navegación ----------
-const VIEWS = ["reactivos", "estante", "emergencia", "seccion"];
-const viewHash = () => view === "seccion" ? curSec : view;
+const VIEWS = ["reactivos", "estante", "aprender", "emergencia", "seccion"];
+const viewHash = () => view === "seccion" ? curSec : view === "aprender" && curLec ? "aprender/" + curLec : view;
 let primera = true;
 function setView(v){
   if (!VIEWS.includes(v) || (v === "seccion" && !curSec)) v = "reactivos";
@@ -292,7 +301,7 @@ function setView(v){
   const pintar = () => {
     for (const x of VIEWS) $("#v-" + x).hidden = x !== v;
     document.querySelectorAll("[data-v]").forEach(b => b.dataset.v === v ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
-    ({reactivos: renderReactivos, estante: renderEstante, emergencia: renderEmergencia, seccion: renderSeccion})[v]();
+    ({reactivos: renderReactivos, estante: renderEstante, emergencia: renderEmergencia, seccion: renderSeccion, aprender: () => aprender.render(curLec)})[v]();
     window.scrollTo(0, 0);
   };
   if (location.hash !== "#" + viewHash()) history.replaceState(null, "", "#" + viewHash());
@@ -310,6 +319,8 @@ function route(){
   // Volver de una ficha a la vista que estaba abajo: no se redibuja ni se pierde el scroll.
   if (!$("#v-" + view).hidden && h === viewHash().toUpperCase()){ closeFicha(); return; }
   if (SEC[h]){ showSec(h); return; }
+  const m = h.match(/^APRENDER(?:\/([A-Z]+))?$/);
+  if (m){ const id = m[1]?.toLowerCase() || null; curLec = id && aprender.hayLeccion(id) ? id : null; setView("aprender"); return; }
   setView(h.toLowerCase());
 }
 window.addEventListener("hashchange", route);

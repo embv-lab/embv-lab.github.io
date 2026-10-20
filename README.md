@@ -11,6 +11,10 @@ Bella Vista. Es la página a la que llevan los QR de los carteles del estante.
   derrame, incendio, protección personal, eliminación y dónde se guarda).
 - **Estante:** el plan de las 12 secciones y el control de compatibilidad entre dos reactivos.
 - **Emergencia:** teléfonos, los tres pasos y la búsqueda rápida de un producto.
+- **Aprender:** seis lecciones cortas e interactivas, basadas en el manual de capacitación: cómo
+  leer una etiqueta, los 9 pictogramas, el rombo de colores, un juego de compatibilidad con pares
+  reales del estante, las reglas del laboratorio y una autoevaluación de diez preguntas. El
+  progreso se guarda sólo en el navegador de quien la usa (no es un registro de asistencia).
 - **Sección:** la vista que abre el QR de cada cartel. Qué va ahí, sus peligros y qué no se
   puede guardar en esa sección.
 
@@ -38,6 +42,7 @@ ya impresos siguen andando.
 | `index.html` | Estructura de la página. |
 | `estilos.css` | Todo el diseño (ver `DESIGN.md`). |
 | `app.js` | Lógica: búsqueda, fichas, estante, secciones y navegación. |
+| `aprender.js` | Las seis lecciones de Aprender. Su contenido sale de los documentos 07, 08, 09, 11, 15, 16 y 17. |
 | `iconos.svg` | Pictogramas SGA oficiales (dominio público) e íconos Phosphor (MIT). |
 | `logo.svg` | Logo EMBV. |
 | `manifest.webmanifest` | Permite instalar la página en el celular como app. |

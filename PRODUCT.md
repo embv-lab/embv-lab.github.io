@@ -55,7 +55,10 @@ base.
 ## Capabilities and Constraints
 
 - Vistas: sección (destino del QR), reactivos con búsqueda y filtros, ficha de cada reactivo,
-  estante con verificador de compatibilidad, emergencia.
+  estante con verificador de compatibilidad, aprender (capacitación interactiva y resumida del
+  manual, documento 07), emergencia.
+- Aprender no reemplaza la capacitación presencial ni su registro de asistencia (que sigue en la
+  versión privada): sirve para preparar y repasar.
 - Los datos químicos no se editan acá: la fuente única es `fuentes/datos_reactivos.py` en el
   repositorio privado `WiseMKT/embv-laboratorio`; se exportan a `datos/reactivos.json`.
 - Lo que muestra la web tiene que coincidir con la etiqueta y la ficha impresas.
