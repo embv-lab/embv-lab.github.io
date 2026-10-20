@@ -3,7 +3,7 @@
 Versión pública, **sólo de consulta**, de la página del laboratorio de la Escuela Modelo de
 Bella Vista. Es la página a la que llevan los QR de los carteles del estante.
 
-**Dirección:** https://wisemkt.github.io/laboratorio-embv-web/
+**Dirección:** https://embv-lab.github.io/
 
 ## Qué muestra
 
@@ -21,7 +21,7 @@ la versión privada de la página, dentro del repositorio privado `embv-laborato
 
 | Destino | Enlace |
 |---|---|
-| Sección del estante | `https://wisemkt.github.io/laboratorio-embv-web/#E1-4` … `#E1-9`, `#E2-4` … `#E2-9` |
+| Sección del estante | `https://embv-lab.github.io/#E1-4` … `#E1-9`, `#E2-4` … `#E2-9` |
 | Caja de riesgo especial | `…/#CAJA-RE` |
 | Material didáctico | `…/#MATERIAL` |
 | Ficha de un reactivo | `…/#R001` … `#R117` |
