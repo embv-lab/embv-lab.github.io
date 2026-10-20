@@ -1,0 +1,6 @@
+# GitHub Pages: publicar sólo la web, no los archivos de trabajo del repositorio.
+exclude:
+  - README.md
+  - PRODUCT.md
+  - DESIGN.md
+  - .impeccable

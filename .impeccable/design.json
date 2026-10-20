@@ -1,0 +1,14 @@
+{
+  "world": "señalética de seguridad (IRAM 10005 / ISO 7010)",
+  "colors": {
+    "safety": { "verde": "#237f52", "rojo": "#9b2423", "amarillo": "#f9a800", "azul": "#1e4f9c", "negro": "#14181b" },
+    "clases": { "inflamables": "#c8282a", "oxidantes": "#f9a800", "corrosivos": "#2f6d8f", "toxicos": "#5b3a8e", "bajoRiesgo": "#5f6a73", "especial": "#14181b" },
+    "light": { "suelo": "#e8ebed", "placa": "#ffffff", "placa2": "#f3f5f6", "tinta": "#14181b", "tinta2": "#4b545b", "linea": "#d5dade" },
+    "dark": { "suelo": "#0d1012", "placa": "#191e22", "placa2": "#21272c", "tinta": "#eef1f2", "tinta2": "#a9b2b8", "linea": "#2c343a" }
+  },
+  "type": { "sans": "Overpass 400/600/700/800", "mono": "Overpass Mono 600/700", "body": "17px/1.5" },
+  "radius": { "placa": "18px", "control": "12px", "pill": "999px" },
+  "shadow": { "placa": "0 1px 2px rgba(20,24,27,.07), 0 8px 22px -10px rgba(20,24,27,.28)", "hoja": "0 2px 4px rgba(20,24,27,.08), 0 22px 48px -18px rgba(20,24,27,.42)" },
+  "motion": { "ease": "cubic-bezier(.16,1,.3,1)", "hoja": "500ms", "cascada": "55ms", "via": "400ms", "vista": "220ms" },
+  "icons": { "pictogramas": "SGA oficiales, dominio público", "ui": "Phosphor 2.1.1 (MIT), bold y fill" }
+}

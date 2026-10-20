@@ -11,48 +11,63 @@ try {
   if (!res.ok) throw new Error(res.status);
   D = await res.json();
 } catch (e) {
-  document.querySelector("main").innerHTML = `<div class="alert crit" style="margin-top:24px"><b>No se pudieron cargar las fichas.</b>Revisá la conexión y volvé a abrir la página. Ante una emergencia: 107 · Intoxicaciones 0800-333-0160.</div>`;
+  document.querySelector("main").innerHTML = `<div class="placa color rojo"><div class="cab"><span class="simbolo">${icon("warning", "fill")}</span><h3>No se pudieron cargar las fichas</h3></div><p>Revisá la conexión y volvé a abrir la página. Ante una emergencia: <b>107</b> · Intoxicaciones <b>0800-333-0160</b>.</p></div>`;
   throw e;
 }
 const R = D.reactivos;
 const RI = Object.fromEntries(R.map(r => [r.id, r]));
 const PIC_NOM = {GHS01:"Explosivo",GHS02:"Inflamable",GHS03:"Comburente",GHS04:"Gas a presión",GHS05:"Corrosivo",GHS06:"Toxicidad aguda",GHS07:"Nocivo o irritante",GHS08:"Peligro para la salud",GHS09:"Peligro para el ambiente"};
+// Clase de almacenamiento → color de familia (los mismos grupos que los carteles).
 const CL_COLOR = {A1:"--c-infl",A2:"--c-infl",F:"--c-ox",BC:"--c-cor",D:"--c-cor",E:"--c-cor",G:"--c-tox",H:"--c-esp"};
-const SEC_NOMBRE = {"CAJA-RE":"Caja estanca de riesgo especial","MATERIAL":"Zona de material didáctico"};
+const CL_CLARO = new Set(["F"]); // fondo amarillo: texto negro
+const SEC_NOMBRE = {"CAJA-RE":"Caja de riesgo especial","MATERIAL":"Material didáctico"};
 // Sección → clase. Las secciones son los destinos de los QR de los carteles
 // (documento 12): #E1-4 … #E2-9, #CAJA-RE y #MATERIAL.
 const SEC = Object.fromEntries(Object.entries(D.seccion).map(([cl, s]) => [s, cl]));
 // Los mismos avisos que lleva el cartel impreso de esas secciones.
 const SEC_AVISO = {
-  F: "Los oxidantes alimentan el fuego: no se sofocan.",
-  H: "No usar agua ni extintor de CO₂: sólo arena seca. Manipulación restringida al ayudante de laboratorio.",
+  F: ["fire-fill", "Los oxidantes alimentan el fuego: no se sofocan."],
+  H: ["fire-extinguisher-fill", "No usar agua ni extintor de CO₂: sólo arena seca. Manipula únicamente el ayudante de laboratorio."],
 };
+const VIA_ICON = {"Ojos":"eye", "Piel":"hand-palm", "Inhalación":"wind", "Ingestión":"fork-knife"};
 
 let view = "reactivos", curSec = null;
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const plain = s => String(s ?? "").replace(/<[^>]+>/g, "");
+// Primera letra en mayúscula, aunque el texto empiece con una etiqueta (<b>…).
+const may = s => String(s ?? "").replace(/^((?:\s|<[^>]+>)*)(\p{Ll})/u, (m, a, b) => a + b.toUpperCase());
+const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+// Separador con espacio propio: Overpass pega el punto medio al texto que sigue.
+const SEP = `<span class="sep" aria-hidden="true">·</span><span class="sr">, </span>`;
 
 // ---------- dibujo ----------
-const picto = (code, size = 26) => `<svg class="picto" width="${size}" height="${size}" role="img" aria-label="${esc(PIC_NOM[code] || code)}"><use href="#${code}"/></svg>`;
-function nfpa(n, size = 84){
+function icon(n, w = "bold", cls = "ic"){ return `<svg class="${cls}" aria-hidden="true"><use href="iconos.svg#i-${n}-${w}"/></svg>`; }
+const picto = (code, size = 28) => `<svg class="ghs" width="${size}" height="${size}" role="img" aria-label="${esc(PIC_NOM[code] || code)}"><use href="iconos.svg#${code}"/></svg>`;
+const PROHIBIDO = `<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="19.5" fill="none" stroke="currentColor" stroke-width="6"/><path d="M10.5 10.5 37.5 37.5" stroke="currentColor" stroke-width="6"/></svg>`;
+function nfpa(n, size = 56){
   const [h, f, r, s] = n;
-  const sp = s === "W" ? `<text x="50" y="84" text-anchor="middle" font-size="15" font-weight="800" fill="#111" font-family="Archivo,Arial" text-decoration="line-through">W</text><line x1="40" y1="79" x2="60" y2="79" stroke="#111" stroke-width="2"/>`
-         : s ? `<text x="50" y="84" text-anchor="middle" font-size="13" font-weight="800" fill="#111" font-family="Archivo,Arial">${esc(s)}</text>` : "";
-  return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" role="img" aria-label="Rombo NFPA: salud ${h}, inflamabilidad ${f}, reactividad ${r}${s ? ", " + s : ""}">
-    <g stroke="#111" stroke-width="1.6">
-    <path d="M50 2 74 26 50 50 26 26Z" fill="#d7261e"/><path d="M26 26 50 50 26 74 2 50Z" fill="#1f5fbf"/>
-    <path d="M74 26 98 50 74 74 50 50Z" fill="#f2c200"/><path d="M50 50 74 74 50 98 26 74Z" fill="#fff"/></g>
-    <g font-family="Archivo,Arial" font-weight="800" font-size="20" text-anchor="middle">
-    <text x="50" y="34" fill="#fff">${f}</text><text x="26" y="57" fill="#fff">${h}</text><text x="74" y="57" fill="#111">${r}</text></g>${sp}</svg>`;
+  const sp = s === "W" ? `<text x="50" y="84" text-anchor="middle" font-size="15" font-weight="800" fill="#111" text-decoration="line-through">W</text><line x1="40" y1="79" x2="60" y2="79" stroke="#111" stroke-width="2"/>`
+         : s ? `<text x="50" y="84" text-anchor="middle" font-size="13" font-weight="800" fill="#111">${esc(s)}</text>` : "";
+  return `<svg class="ghs" width="${size}" height="${size}" viewBox="0 0 100 100" role="img" aria-label="Rombo NFPA 704: salud ${h}, inflamabilidad ${f}, reactividad ${r}${s ? ", " + s : ""}">
+    <g stroke="#111" stroke-width="1.6" stroke-linejoin="round">
+    <path d="M50 2 74 26 50 50 26 26Z" fill="#e1251b"/><path d="M26 26 50 50 26 74 2 50Z" fill="#1f5fbf"/>
+    <path d="M74 26 98 50 74 74 50 50Z" fill="#f6c700"/><path d="M50 50 74 74 50 98 26 74Z" fill="#fff"/></g>
+    <g font-family="Overpass,Arial,sans-serif" font-weight="800" font-size="21" text-anchor="middle">
+    <text x="50" y="34" fill="#fff">${f}</text><text x="26" y="58" fill="#fff">${h}</text><text x="74" y="58" fill="#111">${r}</text></g>${sp}</svg>`;
 }
-const sig = s => s === "Peligro" ? `<span class="sig pel">PELIGRO</span>` : s === "Atención" ? `<span class="sig ate">ATENCIÓN</span>` : `<span class="sig nc">Sin clasificar</span>`;
+const sig = s => s === "Peligro" ? `<span class="palabra pel">Peligro</span>` : s === "Atención" ? `<span class="palabra ate">Atención</span>` : `<span class="palabra nc">Sin clasificar</span>`;
 const secLabel = s => SEC_NOMBRE[s] || s;
+const claseStyle = cl => `--clase:var(${CL_COLOR[cl] || "--c-neu"})`;
+const claro = cl => CL_CLARO.has(cl) ? " claro" : "";
 const incompatibles = cl => Object.entries(D.mclase[cl] || {}).filter(([, v]) => v === 2).map(([k]) => k);
+function placa(color, ic, titulo, cuerpo, extra = ""){
+  return `<div class="placa color ${color}${extra}"><div class="cab"><span class="simbolo">${icon(ic, "fill")}</span><h3>${titulo}</h3></div>${cuerpo}</div>`;
+}
 
 // ---------- reactivos ----------
-const FILT = [["pel","PELIGRO"],["cri","Ficha completa"],["baja","Uso desaconsejado"]];
+const FILT = [["pel","Peligro"],["cri","Ficha completa"],["baja","Uso desaconsejado"]];
 const fstate = {q:"", sec:"", chips:new Set()};
 function setupReactivos(){
   const secs = [...new Set(R.map(r => r.dest))].sort();
@@ -65,40 +80,44 @@ function setupReactivos(){
 }
 const norm = s => plain(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 function match(r, q){ if (!q) return true; const n = norm(q); return [r.id, r.nom, r.inv, r.cas, r.form].some(x => norm(x).includes(n)); }
-function rowHTML(r, conSec = true){
-  return `<button class="ritem" type="button" data-r="${r.id}"><span class="rid">${r.id}</span>
-    <span class="rn"><b>${esc(r.nom)}</b><span class="meta">${r.form ? `<span>${r.form}</span>` : ""}${sig(r.sen)}${conSec ? `<span class="mono">${esc(r.dest)}</span>` : ""}${r.baja ? `<span class="pill neu">Desaconsejado</span>` : ""}</span></span>
-    <span class="rr"><span class="pics" style="gap:2px">${r.pic.map(p => picto(p, 24)).join("")}</span></span></button>`;
+function filaHTML(r, conSec = true){
+  return `<li><button class="fila" type="button" data-r="${r.id}">
+    <span class="n"><b>${esc(r.nom)}</b><span class="meta">${sig(r.sen)}<span class="mono">${r.id}</span>${r.form && r.form !== "—" ? `<span>${r.form}</span>` : ""}${conSec ? `<span class="etq">${esc(secLabel(r.dest))}</span>` : ""}${r.baja ? `<span class="etq">Desaconsejado</span>` : ""}</span></span>
+    <span class="pics">${r.pic.map(p => picto(p, 30)).join("")}</span>${icon("caret-right", "bold", "ic chev")}</button></li>`;
 }
 function renderReactivos(){
   const list = R.filter(r => match(r, fstate.q) && (!fstate.sec || r.dest === fstate.sec) && [...fstate.chips].every(k =>
     k === "cri" ? r.cri : k === "baja" ? r.baja : k === "pel" ? r.sen === "Peligro" : true));
-  $("#rcount").textContent = `${list.length} ${list.length === 1 ? "reactivo" : "reactivos"} · ${list.reduce((s, r) => s + r.nenv, 0)} envases`;
-  $("#rlist").innerHTML = list.length ? list.map(r => rowHTML(r)).join("") : `<div class="empty">Ningún reactivo coincide con la búsqueda.</div>`;
+  $("#rcount").innerHTML = `${list.length} ${list.length === 1 ? "reactivo" : "reactivos"}${SEP}${list.reduce((s, r) => s + r.nenv, 0)} envases`;
+  $("#rlist").innerHTML = list.length ? list.map(r => filaHTML(r)).join("")
+    : `<li class="vacio"><b>Ningún reactivo coincide.</b><span>Probá con otra parte del nombre o con la fórmula. Si el frasco no figura, tratalo como peligroso y consultá al ayudante de laboratorio.</span></li>`;
 }
 
 // ---------- sección (QR del cartel) ----------
+function localizador(s){
+  const fila = cls => cls.map(cl => `<i class="${D.seccion[cl] === s ? "aqui" : ""}"></i>`).join("");
+  return `<div class="loc" role="img" aria-label="Ubicación en el estante: ${esc(s)}">${fila(D.filaE2)}${fila(D.filaE1)}<span class="loc-cap">Usted está aquí</span></div>`;
+}
 function renderSeccion(){
   const s = curSec, cl = SEC[s];
   const rs = R.filter(r => r.dest === s).sort((a, b) => a.nom.localeCompare(b.nom, "es"));
   const nenv = rs.reduce((t, r) => t + r.nenv, 0);
   const enEstante = D.filaE1.includes(cl) || D.filaE2.includes(cl);
-  const nivel = D.filaE2.includes(cl) ? "Estante de arriba (E2)" : D.filaE1.includes(cl) ? "Estante de abajo (E1)" : "Fuera del estante";
+  const nivel = D.filaE2.includes(cl) ? "Estante de arriba" : D.filaE1.includes(cl) ? "Estante de abajo" : "Fuera del estante";
   const pics = [...new Set(rs.flatMap(r => r.pic))].sort();
   const inc = incompatibles(cl);
+  const av = SEC_AVISO[cl];
   $("#v-seccion").innerHTML = `
-    <div class="sechead" style="border-top-color:var(${CL_COLOR[cl] || "--c-neu"})">
-      <span class="code">${esc(s)}</span>
-      <h2>${esc(D.clases[cl])}</h2>
-      <span class="cap">${nivel} · ${nenv} ${nenv === 1 ? "envase" : "envases"}${enEstante ? ` de ${D.capacidad} de capacidad` : ""}</span>
+    <div class="placa color cartel${claro(cl)}" style="${claseStyle(cl)}">
+      <span class="cod">${esc(s)}</span>
+      <div><h1>${esc(D.clases[cl])}</h1><p class="meta">${nivel}${SEP}${nenv} ${nenv === 1 ? "envase" : "envases"}${enEstante ? ` de ${D.capacidad}` : ""}</p></div>
+      ${enEstante ? localizador(s) : `<span class="fuera">${icon("map-pin", "fill")}Fuera del estante</span>`}
     </div>
-    ${SEC_AVISO[cl] ? `<div class="alert crit"><b>${esc(SEC_AVISO[cl])}</b></div>` : ""}
-    <div class="fsec"><h3>Qué se guarda acá (${rs.length})</h3>
-      <p class="muted" style="font-size:.9rem">Tocá un producto para ver su ficha: primeros auxilios, derrame, incendio y peligros.</p>
-      <div class="rlist">${rs.map(r => rowHTML(r, false)).join("")}</div></div>
-    ${pics.length ? `<div class="fsec"><h3>Peligros presentes en esta sección</h3><div class="hazrow">${pics.map(p => `<figure>${picto(p, 48)}<figcaption>${PIC_NOM[p]}</figcaption></figure>`).join("")}</div></div>` : ""}
-    ${enEstante ? `<div class="never"><b>No almacenar aquí</b><span>${inc.length ? inc.map(k => `${esc(D.clasesCorto[k])} <span class="mono muted">(${esc(D.seccion[k])})</span>`).join(", ") : "No hay clases críticamente incompatibles con ésta, pero igual no se mezcla con otras."}</span></div>` : ""}
-    <div class="secnav"><button class="btn" type="button" data-go="estante">Ver todo el estante</button><button class="btn" type="button" data-go="reactivos">Buscar otro reactivo</button></div>`;
+    ${av ? placa("rojo", av[0].replace("-fill", ""), "Atención", `<p>${esc(av[1])}</p>`) : ""}
+    <div class="grupo"><h2 class="h3">Qué se guarda acá${SEP}${rs.length}</h2><ul class="lista">${rs.map(r => filaHTML(r, false)).join("")}</ul></div>
+    ${pics.length ? `<div class="placa"><h2 class="h3">Peligros en esta sección</h2><div class="peligros">${pics.map(p => `<figure>${picto(p, 56)}<figcaption>${PIC_NOM[p]}</figcaption></figure>`).join("")}</div></div>` : ""}
+    ${enEstante ? `<div class="placa prohibido">${PROHIBIDO}<div><b>No almacenar aquí</b><p>${inc.length ? inc.map(k => `${esc(D.clasesCorto[k])} <span class="mono">(${esc(D.seccion[k])})</span>`).join(", ") : "No hay clases críticamente incompatibles con ésta, pero igual no se mezcla con otras."}</p></div></div>` : ""}
+    <div class="acciones"><button class="btn" type="button" data-go="estante">${icon("squares-four")}Ver todo el estante</button><button class="btn" type="button" data-go="reactivos">${icon("magnifying-glass")}Buscar otro reactivo</button></div>`;
 }
 
 // ---------- ficha ----------
@@ -117,71 +136,99 @@ function openFicha(id, push = true){
   if (location.hash !== "#" + id){ history[push ? "pushState" : "replaceState"](null, "", "#" + id); fichaPush = push; }
   else fichaPush = false;
   const dlg = $("#ficha");
+  dlg.classList.remove("saliendo");
   dlg.innerHTML = fichaHTML(r);
   if (!dlg.open) dlg.showModal();
   dlg.scrollTop = 0;
+  // El foco va al título (lo anuncia el lector de pantalla) y no al botón de cerrar.
+  $("#fh-t").focus({preventScroll: true});
 }
-function closeFicha(){ const d = $("#ficha"); if (d.open) d.close(); }
+// Cierra con la animación de bajada; el evento "close" del diálogo maneja el historial.
+function closeFicha(animar = true){
+  const d = $("#ficha"); if (!d.open || d.classList.contains("saliendo")) return;
+  if (!animar || reduce.matches){ d.close(); return; }
+  d.classList.add("saliendo");
+  const fin = () => { d.removeEventListener("animationend", fin); if (d.classList.contains("saliendo")){ d.classList.remove("saliendo"); d.close(); } };
+  d.addEventListener("animationend", fin);
+  setTimeout(fin, 400);
+}
+function viaHTML(r){
+  const rutas = r.vias.filter(v => RUTAS.includes(v.t));
+  const i = Math.max(0, rutas.findIndex(v => v.t === viaSel));
+  const sel = rutas[i];
+  return `<div class="vias" role="group" aria-label="Primeros auxilios según la vía de exposición" style="--v:${i}">
+      ${rutas.map(v => `<button type="button" data-via="${esc(v.t)}" aria-pressed="${v.t === sel?.t}">${icon(VIA_ICON[v.t] || "first-aid", "fill")}${esc(v.t)}</button>`).join("")}
+    </div>
+    <p class="via-txt" aria-live="polite">${sel ? may(sel.d) : ""}</p>`;
+}
 function fichaHTML(r){
   const inc = incompatibles(r.cl).map(k => D.clasesCorto[k]);
   const f = r.fds;
   const gen = r.vias.find(v => v.t === "Medida general");
-  const rutas = r.vias.filter(v => RUTAS.includes(v.t));
-  const sel = rutas.find(v => v.t === viaSel) || rutas[0];
-  return `<div class="fhead"><div class="t"><span class="eyebrow">${r.id} · Ficha</span><h2 id="fh-t">${esc(r.nom)}</h2><div class="row" style="gap:8px">${sig(r.sen)}${r.baja ? `<span class="pill neu">Uso desaconsejado</span>` : ""}</div></div>
-    <div class="fid">${r.pic.map(p => picto(p, 34)).join("")}${nfpa(r.nfpa, 42)}</div>
-    <button class="btn sm" type="button" data-close aria-label="Cerrar ficha">Cerrar</button></div>
-  <div class="fbody">
-    <div class="telrow">
-      <a class="tel" href="tel:107"><span>Emergencias</span><b>107</b></a>
-      <a class="tel" href="tel:100"><span>Bomberos</span><b>100</b></a>
-      <a class="tel wide" href="tel:08003330160"><span>Intoxicaciones (CNI)</span><b>0800-333-0160</b></a>
+  let n = 0; const e = () => `entra" style="--i:${n++}`;
+  return `<div class="hcab"><div class="asa" aria-hidden="true"></div><div class="t"><div>
+      <h2 id="fh-t" tabindex="-1">${esc(r.nom)}</h2>
+      <div class="sig">${sig(r.sen)}<span class="id">${r.id}</span>${r.baja ? `<span class="etq">Uso desaconsejado</span>` : ""}</div></div>
+      <button class="cerrar" type="button" data-close aria-label="Cerrar ficha">${icon("x")}</button></div></div>
+  <div class="hcuerpo">
+    <div class="identidad ${e()}"><div class="pics">${r.pic.map(p => picto(p, 58)).join("")}</div>${nfpa(r.nfpa, 58)}</div>
+    <div class="tels ${e()}">
+      <a class="tel" href="tel:107">${icon("phone-call", "fill")}<span><small>Emergencias</small><b>107</b></span></a>
+      <a class="tel" href="tel:100">${icon("fire", "fill")}<span><small>Bomberos</small><b>100</b></span></a>
+      <a class="tel ancho" href="tel:08003330160">${icon("first-aid", "fill")}<span><small>Intoxicaciones (CNI)</small><b>0800-333-0160</b></span></a>
     </div>
-    <div class="fsec act"><h3>Qué hacer</h3>
-      ${gen ? `<p class="gen"><b>${esc(gen.t)}:</b> ${gen.d}</p>` : ""}
-      <div class="vias" role="group" aria-label="Primeros auxilios por vía de exposición">
-        ${rutas.map(v => `<button class="via" type="button" data-via="${esc(v.t)}" aria-pressed="${v.t === sel.t}">${esc(v.t)}</button>`).join("")}
-      </div>
-      ${sel ? `<div class="viapanel" id="viapanel" role="region" aria-live="polite"><h4>${esc(sel.t)}</h4><p>${sel.d}</p></div>` : ""}
-      <div class="grid2" style="margin-top:4px"><div><h4 class="lbl">En caso de derrame</h4><p>${r.derrame}</p></div>
-        <div><h4 class="lbl">En caso de incendio</h4><p>${r.fuego}</p></div></div>
+    <div class="${e()}">${placa("verde", "first-aid", "Primeros auxilios", `${gen ? `<p class="gen">${may(gen.d)}</p>` : ""}<div id="via">${viaHTML(r)}</div>`)}</div>
+    <div class="dos ${e()}">
+      ${placa("amarillo", "warning", "Si se derrama", `<p>${r.derrame}</p>`)}
+      ${placa("rojo", "fire-extinguisher", "Si hay fuego", `<p>${r.fuego}</p>`)}
     </div>
-    <div class="fsec"><h3>Peligros</h3>${r.h.length ? `<ul class="codes">${r.h.map(h => `<li><span>${esc(hText(h, D.H))}</span><span class="mono">${h}</span></li>`).join("")}</ul>` : `<p class="muted">No clasificado como peligroso.</p>`}</div>
-    <div class="fsec"><h3>No guardar junto a</h3><p>${esc(r.inc)}</p>${inc.length ? `<p class="muted" style="font-size:.9rem">Clases del estante incompatibles: ${inc.map(esc).join(", ")}.</p>` : ""}</div>
-    <div class="idcard"><dl>
-      ${r.form ? `<dt>Fórmula</dt><dd>${r.form}</dd>` : ""}
-      <dt>CAS</dt><dd class="mono">${esc(r.cas || "Mezcla o producto comercial")}</dd>
-      <dt>Estado</dt><dd>${esc(r.est)}</dd>
-      <dt>Clase</dt><dd>${esc(D.clases[r.cl])}</dd>
-    </dl><div class="pics">${r.pic.length ? r.pic.map(p => `<figure>${picto(p, 48)}<figcaption>${PIC_NOM[p]}</figcaption></figure>`).join("") : `<span class="muted">Sin pictograma SGA</span>`}</div></div>
-    <div class="fsec"><h3>Dónde se guarda</h3><div class="loc"><button class="sec-tag" type="button" data-sec="${esc(r.dest)}" style="background:none;cursor:pointer;color:var(--ink)">${esc(secLabel(r.dest))}</button><span class="muted" style="font-family:var(--f-ui);font-weight:400;font-size:.9rem">${esc(D.clases[r.cl])}</span></div></div>
-    ${r.obs && !r.ver ? `<div class="alert info">${esc(r.obs)}</div>` : ""}
-    <details class="more fsec"><summary>Manipulación, protección personal y eliminación</summary>
-      <div class="grid2" style="margin-top:10px"><div class="fsec"><h3>Manipulación y almacenamiento</h3><ul>${r.manip.map(x => `<li>${x}</li>`).join("")}</ul></div>
-        <div class="fsec"><h3>Protección personal</h3><ul>${r.epp.map(x => `<li>${x}</li>`).join("")}</ul></div></div>
-      <div class="fsec" style="margin-top:10px"><h3>Eliminación</h3><p>${r.elim}</p></div></details>
-    <details class="more fsec"><summary>Consejos de prudencia (frases P de la etiqueta)</summary>
-      <ul class="codes" style="margin-top:10px">${r.p.map(p => `<li><span>${esc(hText(p, D.P))}</span><span class="mono">${p}</span></li>`).join("")}</ul></details>
-    ${f ? `<details class="more fsec"><summary>Datos de la ficha completa de 16 secciones</summary><div class="kv" style="margin-top:10px">
+    <div class="${e()}">${placa("azul", "goggles", "Protección obligatoria", `<ul style="margin:0;padding-left:18px;display:grid;gap:6px">${r.epp.map(x => `<li>${x}</li>`).join("")}</ul>`)}</div>
+    <div class="placa ${e()}"><h3 class="h3">Peligros</h3>${r.h.length ? `<ul class="frases">${r.h.map(h => `<li><span>${esc(hText(h, D.H))}<span class="cod">${h}</span></span></li>`).join("")}</ul>` : `<p>No clasificado como peligroso.</p>`}</div>
+    <div class="placa prohibido ${e()}">${PROHIBIDO}<div><b>No guardar junto a</b><p>${esc(r.inc)}${inc.length ? `. Clases del estante: ${inc.map(esc).join(", ")}.` : ""}</p></div></div>
+    <div class="placa ${e()}"><h3 class="h3">Dónde se guarda</h3>
+      <div class="grupo"><button class="seccion-chip${claro(r.cl)}" type="button" data-sec="${esc(r.dest)}" style="${claseStyle(r.cl)}">${icon("map-pin", "fill")}${esc(secLabel(r.dest))}</button>
+      <dl class="datos">
+        <dt>Clase</dt><dd>${esc(D.clases[r.cl])}</dd>
+        ${r.form && r.form !== "—" ? `<dt>Fórmula</dt><dd>${r.form}</dd>` : ""}
+        <dt>CAS</dt><dd class="mono">${esc(r.cas || "Mezcla o producto comercial")}</dd>
+        <dt>Estado</dt><dd>${esc(r.est)}</dd>
+        <dt>En el inventario</dt><dd>${esc(r.inv)}${SEP}${esc(r.cant)}</dd>
+      </dl></div></div>
+    ${r.obs && !r.ver ? `<div class="placa ${e()}"><p>${esc(r.obs)}</p></div>` : ""}
+    <details class="mas ${e()}"><summary>Manipulación y eliminación${icon("caret-down")}</summary><div class="dc">
+      <ul>${r.manip.map(x => `<li>${x}</li>`).join("")}</ul><p>${r.elim}</p></div></details>
+    <details class="mas ${e()}"><summary>Consejos de prudencia (frases P)${icon("caret-down")}</summary><div class="dc">
+      <ul class="frases">${r.p.map(p => `<li><span>${esc(hText(p, D.P))}<span class="cod">${p}</span></span></li>`).join("")}</ul></div></details>
+    ${f ? `<details class="mas ${e()}"><summary>Ficha completa de 16 secciones${icon("caret-down")}</summary><div class="dc"><div class="kv">
       ${[["Aspecto", f.asp], ["Olor", f.olo], ["pH", f.pH], ["Punto de fusión", f.pf], ["Punto de ebullición", f.pe], ["Punto de inflamación", f.pi], ["Densidad", f.den], ["Solubilidad", f.sol], ["N.º ONU", f.un], ["Clase de transporte", f.cla], ["Grupo de embalaje", f.ge]].map(([k, v]) => `<div><span>${k}</span>${v || D.nd}</div>`).join("")}</div>
-      <div class="fsec" style="margin-top:10px"><p><b>Toxicología.</b> ${f.tox || D.nd}</p><p><b>Ecología.</b> ${f.eco || D.nd}</p>${f.ext ? `<p><b>Extinción.</b> ${f.ext}</p>` : ""}${f.epp ? `<p><b>Protección.</b> ${f.epp}</p>` : ""}</div></details>` : ""}
-    <p class="muted" style="font-size:.84rem">Fuente: documentos 04${r.cri ? " y 05" : ""} del sistema de seguridad del laboratorio, generados de la misma base que las etiquetas.</p>
+      <p><b>Toxicología.</b> ${f.tox || D.nd}</p><p><b>Ecología.</b> ${f.eco || D.nd}</p>${f.ext ? `<p><b>Extinción.</b> ${f.ext}</p>` : ""}${f.epp ? `<p><b>Protección.</b> ${f.epp}</p>` : ""}</div></details>` : ""}
+    <p class="nota">Fuente: documentos 04${r.cri ? " y 05" : ""} del sistema de seguridad del laboratorio, generados de la misma base que las etiquetas.</p>
   </div>`;
+}
+function cambiarVia(t){
+  viaSel = t;
+  const box = $("#via"); if (!box || !fichaId) return;
+  const r = RI[fichaId], rutas = r.vias.filter(v => RUTAS.includes(v.t));
+  const i = rutas.findIndex(v => v.t === t); if (i < 0) return;
+  box.querySelector(".vias").style.setProperty("--v", i);
+  box.querySelectorAll("[data-via]").forEach(b => b.setAttribute("aria-pressed", b.dataset.via === t));
+  const p = box.querySelector(".via-txt");
+  p.innerHTML = may(rutas[i].d);
+  p.classList.remove("cambia"); void p.offsetWidth; p.classList.add("cambia");
 }
 
 // ---------- estante ----------
+function celda(cl, conLista = false){
+  const s = D.seccion[cl], rs = R.filter(r => r.dest === s), env = rs.reduce((t, r) => t + r.nenv, 0);
+  return `<button class="celda${claro(cl)}" type="button" data-sec="${s}" style="${claseStyle(cl)}">
+    <span class="sc">${esc(secLabel(s))}</span>
+    <span><span class="cn">${esc(conLista ? D.clases[cl] : D.clasesCorto[cl])}</span><br><span class="cap">${rs.length} reactivos${SEP}${env} envases</span></span></button>`;
+}
 function renderEstante(){
-  const cell = cl => {
-    const s = D.seccion[cl], plan = D.envClase[cl] || 0, n = R.filter(r => r.dest === s).length;
-    return `<button class="cell" type="button" data-sec="${s}" style="border-top-color:var(${CL_COLOR[cl] || "--c-neu"})">
-      <span class="sc">${s}</span><span class="cn">${esc(D.clasesCorto[cl])}</span>
-      <span class="cap">${n} reactivos · ${plan} envases</span></button>`;
-  };
-  $("#shelf").innerHTML = `<div class="shelfrow"><span class="lvl">E2 · arriba</span>${D.filaE2.map(cell).join("")}</div><div class="shelfrow"><span class="lvl">E1 · abajo</span>${D.filaE1.map(cell).join("")}</div>`;
-  $("#offshelf").innerHTML = ["H", "M"].map(cl => {
-    const s = D.seccion[cl], rs = R.filter(r => r.dest === s);
-    return `<button class="cell" type="button" data-sec="${s}" style="min-height:0;border-top-color:var(${CL_COLOR[cl] || "--c-neu"})"><span class="sc">${esc(secLabel(s))}</span><span class="cn">${esc(D.clases[cl])}</span><span class="cap">${rs.map(r => esc(r.nom)).join(", ")}</span></button>`;
-  }).join("");
+  $("#shelf").innerHTML = `
+    <div class="nivel"><h2>Estante de arriba${SEP}E2</h2><div class="fila6">${D.filaE2.map(cl => celda(cl)).join("")}</div></div>
+    <div class="nivel"><h2>Estante de abajo${SEP}E1</h2><div class="fila6">${D.filaE1.map(cl => celda(cl)).join("")}</div></div>
+    <div class="nivel"><h2>Fuera del estante</h2><div class="fuera-est">${["H", "M"].map(cl => celda(cl, true)).join("")}</div></div>`;
 }
 function setupCompat(){
   const opts = `<option value="">Elegir reactivo…</option>` + [...R].sort((a, b) => a.nom.localeCompare(b.nom, "es")).map(r => `<option value="${r.id}">${esc(r.nom)} (${r.id})</option>`).join("");
@@ -191,10 +238,10 @@ function setupCompat(){
     if (!a || !b){ $("#cverdict").innerHTML = ""; return; }
     const n = a.gr === b.gr ? 0 : (D.matriz[a.gr] || {})[b.gr] ?? 0;
     const mot = D.motivos[a.gr + "|" + b.gr] || D.motivos[b.gr + "|" + a.gr] || "";
-    const msg = n === 2 ? ["Incompatibles: nunca juntos", mot ? `Motivo: ${mot}.` : "Grupos químicamente incompatibles según el criterio 2.3 del instructivo."]
-      : n === 1 ? ["Pueden estar en el mismo estante, separados", "Requieren separación física: material no reactivo en el medio o secciones distintas."]
-      : ["Compatibles", "Pueden compartir sección."];
-    $("#cverdict").innerHTML = `<div class="verdict v${n}"><b>${msg[0]}</b><span>${esc(msg[1])}</span><span class="muted" style="font-size:.88rem">${esc(a.nom)}: ${esc(D.gruposNom[a.gr] || a.gr)} · ${esc(b.nom)}: ${esc(D.gruposNom[b.gr] || b.gr)}. En el plan: ${a.dest} y ${b.dest}.</span></div>`;
+    const [color, ic, tit, txt] = n === 2 ? ["rojo", "x", "Incompatibles: nunca juntos", mot ? `Motivo: ${mot}.` : "Grupos químicamente incompatibles según el criterio 2.3 del instructivo."]
+      : n === 1 ? ["amarillo", "warning", "En el mismo estante, separados", "Requieren separación física: material no reactivo en el medio o secciones distintas."]
+      : ["verde", "shield-check", "Compatibles", "Pueden compartir sección."];
+    $("#cverdict").innerHTML = placa(color, ic, tit, `<p>${esc(txt)}</p><p>${esc(a.nom)}: ${esc(D.gruposNom[a.gr] || a.gr)} (${a.dest})${SEP}${esc(b.nom)}: ${esc(D.gruposNom[b.gr] || b.gr)} (${b.dest}).</p>`, " veredicto");
   };
   $("#ca").addEventListener("change", upd); $("#cb").addEventListener("change", upd);
 }
@@ -203,21 +250,23 @@ function setupCompat(){
 function renderEmergencia(){ renderEsearch(); }
 function renderEsearch(){
   const q = $("#eq").value.trim();
-  if (!q){ $("#eres").innerHTML = `<p class="muted" style="font-size:.94rem">Muestra primeros auxilios, cómo apagar un incendio y cómo contener un derrame de ese producto.</p>`; return; }
+  if (!q){ $("#eres").innerHTML = `<p class="cuenta">Muestra los primeros auxilios, cómo apagar un incendio y cómo contener un derrame de ese producto.</p>`; return; }
   const list = R.filter(r => match(r, q)).slice(0, 4);
-  $("#eres").innerHTML = list.length ? list.map(r => `<div class="panel" style="display:grid;gap:10px;padding:14px"><div class="row" style="justify-content:space-between"><b style="font-family:var(--f-disp);font-size:1.1rem">${esc(r.nom)}</b><span class="row" style="gap:4px">${r.pic.map(p => picto(p, 30)).join("")}</span></div>
-    <div class="fsec act"><h3>Primeros auxilios</h3><ul class="codes">${r.vias.filter(v => v.t === "Medida general" || RUTAS.includes(v.t)).map(v => `<li><span><b>${esc(v.t)}:</b> ${v.d}</span></li>`).join("")}</ul></div>
-    <div class="grid2"><div class="fsec"><h3>Incendio</h3><p>${r.fuego}</p></div><div class="fsec"><h3>Derrame</h3><p>${r.derrame}</p></div></div>
-    <button class="btn sm" type="button" data-r="${r.id}" style="justify-self:start">Ver ficha completa</button></div>`).join("")
-    : `<p class="muted">No hay ningún producto con ese nombre en el inventario. Si no se sabe qué es, tratarlo como peligroso: avisar, alejarse y llamar al 107.</p>`;
+  $("#eres").innerHTML = list.length ? list.map(r => `<div class="placa grupo">
+      <div class="identidad" style="justify-content:space-between"><div><h3 style="font-size:1.2rem;font-weight:800">${esc(r.nom)}</h3><div class="sig" style="margin-top:4px">${sig(r.sen)}</div></div><div class="pics" style="display:flex;gap:4px">${r.pic.map(p => picto(p, 40)).join("")}</div></div>
+      <ul class="frases aux">${r.vias.filter(v => RUTAS.includes(v.t)).map(v => `<li><span><b>${esc(v.t)}:</b> ${v.d}</span></li>`).join("")}</ul>
+      <div class="dos">${placa("amarillo", "warning", "Si se derrama", `<p>${r.derrame}</p>`)}${placa("rojo", "fire-extinguisher", "Si hay fuego", `<p>${r.fuego}</p>`)}</div>
+      <button class="btn" type="button" data-r="${r.id}" style="justify-self:start">Ver la ficha completa${icon("caret-right")}</button></div>`).join("")
+    : placa("rojo", "warning", "No está en el inventario", `<p>Si no se sabe qué es, tratarlo como peligroso: avisar, alejarse y llamar al <b>107</b>.</p>`);
 }
 
 // ---------- eventos ----------
 document.addEventListener("click", e => {
   const go = e.target.closest("[data-go]"); if (go){ setView(go.dataset.go); return; }
+  const vb = e.target.closest("[data-v]"); if (vb){ setView(vb.dataset.v); return; }
   const rb = e.target.closest("[data-r]"); if (rb){ e.preventDefault(); openFicha(rb.dataset.r); return; }
   if (e.target.closest("[data-close]")){ closeFicha(); return; }
-  const via = e.target.closest("[data-via]"); if (via){ viaSel = via.dataset.via; if (fichaId){ const d = $("#ficha"), st = d.scrollTop; d.innerHTML = fichaHTML(RI[fichaId]); d.scrollTop = st; } return; }
+  const via = e.target.closest("[data-via]"); if (via){ cambiarVia(via.dataset.via); return; }
   const sec = e.target.closest("[data-sec]"); if (sec){ showSec(sec.dataset.sec); return; }
 });
 // Al cerrar la ficha, si la abrimos nosotros con pushState se vuelve atrás en el
@@ -228,22 +277,31 @@ $("#ficha").addEventListener("close", () => {
   if (fichaPush){ fichaPush = false; history.back(); }
   else history.replaceState(null, "", "#" + viewHash());
 });
+$("#ficha").addEventListener("cancel", e => { e.preventDefault(); closeFicha(); });
 $("#ficha").addEventListener("click", e => { if (e.target === $("#ficha")) closeFicha(); });
 $("#btn-sos").addEventListener("click", () => setView("emergencia"));
-$("#tabs").addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (b) setView(b.dataset.v); });
 $("#eq").addEventListener("input", renderEsearch);
 
 // ---------- navegación ----------
 const VIEWS = ["reactivos", "estante", "emergencia", "seccion"];
 const viewHash = () => view === "seccion" ? curSec : view;
+let primera = true;
 function setView(v){
   if (!VIEWS.includes(v) || (v === "seccion" && !curSec)) v = "reactivos";
-  view = v; closeFicha();
-  for (const x of VIEWS) $("#v-" + x).hidden = x !== v;
-  document.querySelectorAll("#tabs [data-v]").forEach(b => b.setAttribute("aria-selected", b.dataset.v === v));
+  view = v; closeFicha(false);
+  const pintar = () => {
+    for (const x of VIEWS) $("#v-" + x).hidden = x !== v;
+    document.querySelectorAll("[data-v]").forEach(b => b.dataset.v === v ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
+    ({reactivos: renderReactivos, estante: renderEstante, emergencia: renderEmergencia, seccion: renderSeccion})[v]();
+    window.scrollTo(0, 0);
+  };
   if (location.hash !== "#" + viewHash()) history.replaceState(null, "", "#" + viewHash());
-  ({reactivos: renderReactivos, estante: renderEstante, emergencia: renderEmergencia, seccion: renderSeccion})[v]();
-  window.scrollTo(0, 0);
+  if (!primera && document.startViewTransition && !reduce.matches){
+    // Si se navega rápido, una transición corta a la anterior: no es un error.
+    const t = document.startViewTransition(pintar);
+    t.ready.catch(() => {}); t.finished.catch(() => {});
+  } else pintar();
+  primera = false;
 }
 function showSec(s){ if (!SEC[s]) return; curSec = s; setView("seccion"); }
 function route(){

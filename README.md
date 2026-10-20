@@ -35,11 +35,15 @@ ya impresos siguen andando.
 
 | Archivo | Qué es |
 |---|---|
-| `index.html` | Estructura de la página y pictogramas SGA (SVG). |
-| `estilos.css` | Todo el diseño. |
+| `index.html` | Estructura de la página. |
+| `estilos.css` | Todo el diseño (ver `DESIGN.md`). |
 | `app.js` | Lógica: búsqueda, fichas, estante, secciones y navegación. |
+| `iconos.svg` | Pictogramas SGA oficiales (dominio público) e íconos Phosphor (MIT). |
+| `logo.svg` | Logo EMBV. |
+| `manifest.webmanifest` | Permite instalar la página en el celular como app. |
 | `datos/reactivos.json` | Los datos. Se generan, no se editan a mano. |
 | `sw.js` | Guarda una copia para que la página abra sin conexión. |
+| `PRODUCT.md`, `DESIGN.md` | Para quien siga el diseño: a quién sirve la página y cómo es su sistema visual. |
 
 ## Cómo se actualiza
 

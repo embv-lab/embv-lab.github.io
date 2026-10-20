@@ -1,0 +1,14 @@
+{
+  "name": "Laboratorio EMBV · Fichas de seguridad",
+  "short_name": "Lab EMBV",
+  "description": "Fichas de seguridad de los reactivos del laboratorio de la Escuela Modelo de Bella Vista.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#e8ebed",
+  "theme_color": "#9b2423",
+  "icons": [
+    { "src": "logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
