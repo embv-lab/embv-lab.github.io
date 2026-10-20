@@ -1,10 +1,12 @@
 // La red primero y, si no hay señal en el laboratorio, la última copia guardada.
 // Así una actualización de las fichas se ve apenas hay conexión, y el QR sigue
 // abriendo la página aunque el celular esté sin datos.
-const CACHE = "embv-v1";
+// Al cambiar la lista de archivos, subir el número de CACHE.
+const CACHE = "embv-v2";
+const ARCHIVOS = ["./", "index.html", "estilos.css", "app.js", "datos/reactivos.json"];
 
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(["./"])).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARCHIVOS)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", e => {

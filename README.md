@@ -31,23 +31,28 @@ Los enlaces no distinguen mayúsculas (`#e1-4` también funciona). Si algún dí
 dominio propio, GitHub Pages redirige las direcciones `github.io` al dominio nuevo, así que los QR
 ya impresos siguen andando.
 
+## Archivos
+
+| Archivo | Qué es |
+|---|---|
+| `index.html` | Estructura de la página y pictogramas SGA (SVG). |
+| `estilos.css` | Todo el diseño. |
+| `app.js` | Lógica: búsqueda, fichas, estante, secciones y navegación. |
+| `datos/reactivos.json` | Los datos. Se generan, no se editan a mano. |
+| `sw.js` | Guarda una copia para que la página abra sin conexión. |
+
 ## Cómo se actualiza
 
-`index.html` se genera, no se edita a mano:
+- **Diseño o funciones:** editar `index.html`, `estilos.css` o `app.js`, commit y push. GitHub Pages
+  publica solo en uno o dos minutos.
+- **Datos químicos:** la única fuente de verdad es `fuentes/datos_reactivos.py`, en el repositorio
+  privado. Después de cambiarla, correr `pagina/export.py` (ver `docs/PAGINA.md` de ese repo),
+  copiar el `data.json` resultante sobre `datos/reactivos.json` y actualizar `ACTUALIZADO` en `app.js`.
+- **Siempre que cambie algún archivo:** subir el número de `CACHE` en `sw.js` (`embv-v2` → `embv-v3`)
+  para que los celulares que ya la abrieron descarguen la versión nueva.
 
-- `fuente/publica.html` es la plantilla, con el marcador `/*DATA*/` donde van los datos.
-- `fuente/data.json` contiene los datos que exporta `pagina/export.py` del repositorio privado.
-  La única fuente de verdad sigue siendo `fuentes/datos_reactivos.py`.
-
-Para regenerar la página, desde el repositorio privado:
-
-```
-python pagina/export.py ...        # como indica docs/PAGINA.md
-python pagina/build.py <ruta a este repo>/fuente/publica.html pagina/data.json <ruta a este repo>/index.html
-```
-
-Después de generar, cambiar `ACTUALIZADO` en la plantilla y `CACHE` en `sw.js` (por ejemplo,
-`embv-v2`), y hacer commit y push. GitHub Pages publica solo en un par de minutos.
+Para probarla en la compu hace falta un servidor local, porque abrir `index.html` con doble clic no
+carga los datos. Por ejemplo, `python -m http.server` en esta carpeta.
 
 ## Datos
 
