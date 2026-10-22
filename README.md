@@ -44,6 +44,8 @@ ya impresos siguen andando.
 | `app.js` | Lógica: búsqueda, fichas, estante, secciones y navegación. |
 | `aprender.js` | Las seis lecciones de Aprender. Su contenido sale de los documentos 07, 08, 09, 11, 15, 16 y 17. |
 | `iconos.svg` | Pictogramas SGA oficiales (dominio público) e íconos Phosphor (MIT). |
+| `tipografia/` | Overpass y Overpass Mono (variables, subconjunto latino) y su licencia OFL. |
+| `herramientas/auditoria.mjs` | Auditoría automática antes de publicar (no se publica). |
 | `logo.svg` | Logo EMBV. |
 | `manifest.webmanifest` | Permite instalar la página en el celular como app. |
 | `datos/reactivos.json` | Los datos. Se generan, no se editan a mano. |
@@ -57,8 +59,11 @@ ya impresos siguen andando.
 - **Datos químicos:** la única fuente de verdad es `fuentes/datos_reactivos.py`, en el repositorio
   privado. Después de cambiarla, correr `pagina/export.py` (ver `docs/PAGINA.md` de ese repo),
   copiar el `data.json` resultante sobre `datos/reactivos.json` y actualizar `ACTUALIZADO` en `app.js`.
-- **Siempre que cambie algún archivo:** subir el número de `CACHE` en `sw.js` (`embv-v2` → `embv-v3`)
+- **Siempre que cambie algún archivo:** subir el número de `CACHE` en `sw.js` (`embv-v5` → `embv-v6`)
   para que los celulares que ya la abrieron descarguen la versión nueva.
+- **Antes de publicar:** con la página servida en local, `node herramientas/auditoria.mjs`. Tiene que
+  terminar en "Todo limpio": revisa desbordes, botones chicos, contraste en los dos temas, errores, y
+  que los primeros auxilios de la ficha entren en la primera pantalla de un celular.
 
 Para probarla en la compu hace falta un servidor local, porque abrir `index.html` con doble clic no
 carga los datos: `python -m http.server` en esta carpeta, o sin Python,

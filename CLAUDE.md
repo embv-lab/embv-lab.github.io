@@ -18,14 +18,16 @@ de seguridad). La dirección de diseño acordada está en `.impeccable/briefs/in
   privado.
 - Lo que muestra la web tiene que coincidir con la etiqueta y la ficha impresas.
 - Los colores de seguridad (verde, rojo, amarillo, azul) significan algo: no usarlos de adorno.
-- En cada cambio de archivos, subir `CACHE` en `sw.js` (`embv-v4` → `embv-v5`) y, si cambian los
+- En cada cambio de archivos, subir `CACHE` en `sw.js` (`embv-v5` → `embv-v6`) y, si cambian los
   datos, `ACTUALIZADO` en `app.js`. Si se agrega un archivo, sumarlo a `ARCHIVOS` en `sw.js`.
 - `_config.yml` excluye de la publicación los archivos de trabajo (`README.md`, `PRODUCT.md`,
   `DESIGN.md`, `CLAUDE.md`, `herramientas/`, `.impeccable/`).
 
 ## Probar
 
-En la PC del trabajo no hay Python ni Node. Servidor local:
+**Antes de publicar, `node herramientas/auditoria.mjs` tiene que dar "Todo limpio"** (necesita la
+página servida en local, Node y Playwright; ver el encabezado del script). En la PC del trabajo no
+hay Python ni Node, así que la auditoría se corre en la otra. Servidor local:
 `powershell -ExecutionPolicy Bypass -File herramientas\servir.ps1` → http://localhost:8765/.
 Sin la extensión de Chrome, Edge headless sirve para verificar: `msedge --headless=new
 --dump-dom <url>` (ejecuta el JavaScript) y `--screenshot` (la ventana no baja de unos 500 px de

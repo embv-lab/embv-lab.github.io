@@ -5,7 +5,7 @@
 import { crearAprender } from "./aprender.js";
 
 // Fecha de los datos que trae esta versión. Actualizarla al reemplazar el JSON.
-const ACTUALIZADO = "19/10/2026";
+const ACTUALIZADO = "21/10/2026";
 
 let D;
 try {
@@ -16,8 +16,17 @@ try {
   document.querySelector("main").innerHTML = `<div class="placa color rojo"><div class="cab"><span class="simbolo">${icon("warning", "fill")}</span><h3>No se pudieron cargar las fichas</h3></div><p>Revisá la conexión y volvé a abrir la página. Ante una emergencia: <b>107</b> · Intoxicaciones <b>0800-333-0160</b>.</p></div>`;
   throw e;
 }
+document.getElementById("cargando")?.remove();
 const R = D.reactivos;
 const RI = Object.fromEntries(R.map(r => [r.id, r]));
+// Envases del mismo producto con renglón propio en el inventario (R050, R051 y R052 son tres
+// frascos de ácido sulfúrico). Cada uno conserva su código y su enlace, porque así figura en su
+// etiqueta, pero las listas los muestran una sola vez: tres filas iguales hacían dudar.
+const GRUPO = {};
+for (const r of R) (GRUPO[r.nom] ||= []).push(r);
+const hermanos = r => GRUPO[r.nom];
+const unicos = list => list.filter((r, i) => list.findIndex(x => x.nom === r.nom) === i);
+const cantidad = r => (r.inv.match(/\d[\d.,]*\s*(?:ml|l|cc|g|kg)\b/i) || [""])[0];
 const PIC_NOM = {GHS01:"Explosivo",GHS02:"Inflamable",GHS03:"Comburente",GHS04:"Gas a presión",GHS05:"Corrosivo",GHS06:"Toxicidad aguda",GHS07:"Nocivo o irritante",GHS08:"Peligro para la salud",GHS09:"Peligro para el ambiente"};
 // Clase de almacenamiento → color de familia (los mismos grupos que los carteles).
 const CL_COLOR = {A1:"--c-infl",A2:"--c-infl",F:"--c-ox",BC:"--c-cor",D:"--c-cor",E:"--c-cor",G:"--c-tox",H:"--c-esp"};
@@ -83,35 +92,40 @@ function setupReactivos(){
 const norm = s => plain(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 function match(r, q){ if (!q) return true; const n = norm(q); return [r.id, r.nom, r.inv, r.cas, r.form].some(x => norm(x).includes(n)); }
 function filaHTML(r, conSec = true){
+  const g = hermanos(r), env = g.reduce((t, x) => t + x.nenv, 0);
+  const cods = g.length > 1 ? `<span class="mono">${g.map(x => x.id).join(" · ")}</span><span class="etq">${env} envases</span>` : `<span class="mono">${r.id}</span>`;
   return `<li><button class="fila" type="button" data-r="${r.id}">
-    <span class="n"><b>${esc(r.nom)}</b><span class="meta">${sig(r.sen)}<span class="mono">${r.id}</span>${r.form && r.form !== "—" ? `<span>${r.form}</span>` : ""}${conSec ? `<span class="etq">${esc(secLabel(r.dest))}</span>` : ""}${r.baja ? `<span class="etq">Desaconsejado</span>` : ""}</span></span>
+    <span class="n"><b>${esc(r.nom)}</b><span class="meta">${sig(r.sen)}${cods}${r.form && r.form !== "—" ? `<span>${r.form}</span>` : ""}${conSec ? `<span class="etq">${esc(secLabel(r.dest))}</span>` : ""}${r.baja ? `<span class="etq">Desaconsejado</span>` : ""}</span></span>
     <span class="pics">${r.pic.map(p => picto(p, 30)).join("")}</span>${icon("caret-right", "bold", "ic chev")}</button></li>`;
 }
+// El mismo cierre en todas las búsquedas sin resultado: ante la duda, el teléfono.
+const NO_FIGURA = `Si el frasco no figura, tratalo como peligroso. Ante una emergencia: <a href="tel:107"><b>107</b></a> · Intoxicaciones <a href="tel:08003330160"><b>0800-333-0160</b></a>.`;
 function renderReactivos(){
   const list = R.filter(r => match(r, fstate.q) && (!fstate.sec || r.dest === fstate.sec) && [...fstate.chips].every(k =>
     k === "cri" ? r.cri : k === "baja" ? r.baja : k === "pel" ? r.sen === "Peligro" : true));
-  $("#rcount").innerHTML = `${list.length} ${list.length === 1 ? "reactivo" : "reactivos"}${SEP}${list.reduce((s, r) => s + r.nenv, 0)} envases`;
-  $("#rlist").innerHTML = list.length ? list.map(r => filaHTML(r)).join("")
-    : `<li class="vacio"><b>Ningún reactivo coincide.</b><span>Probá con otra parte del nombre o con la fórmula. Si el frasco no figura, tratalo como peligroso y consultá al ayudante de laboratorio.</span></li>`;
+  const prod = unicos(list);
+  $("#rcount").innerHTML = `${prod.length} ${prod.length === 1 ? "producto" : "productos"}${SEP}${list.reduce((s, r) => s + r.nenv, 0)} envases`;
+  $("#rlist").innerHTML = prod.length ? prod.map(r => filaHTML(r)).join("")
+    : `<li class="vacio"><b>Ningún reactivo coincide.</b><span>Probá con otra parte del nombre o con la fórmula. ${NO_FIGURA}</span></li>`;
 }
 
 // ---------- sección (QR del cartel) ----------
 function localizador(s){
   const fila = cls => cls.map(cl => `<i class="${D.seccion[cl] === s ? "aqui" : ""}"></i>`).join("");
-  return `<div class="loc" role="img" aria-label="Ubicación en el estante: ${esc(s)}">${fila(D.filaE2)}${fila(D.filaE1)}<span class="loc-cap">Usted está aquí</span></div>`;
+  return `<div class="loc" role="img" aria-label="Ubicación en el estante: ${esc(s)}">${fila(D.filaE2)}${fila(D.filaE1)}<span class="loc-cap">Estás acá</span></div>`;
 }
 function renderSeccion(){
   const s = curSec, cl = SEC[s];
-  const rs = R.filter(r => r.dest === s).sort((a, b) => a.nom.localeCompare(b.nom, "es"));
-  const nenv = rs.reduce((t, r) => t + r.nenv, 0);
+  const todos = R.filter(r => r.dest === s), rs = unicos(todos).sort((a, b) => a.nom.localeCompare(b.nom, "es"));
+  const nenv = todos.reduce((t, r) => t + r.nenv, 0);
   const enEstante = D.filaE1.includes(cl) || D.filaE2.includes(cl);
   const nivel = D.filaE2.includes(cl) ? "Estante de arriba" : D.filaE1.includes(cl) ? "Estante de abajo" : "Fuera del estante";
-  const pics = [...new Set(rs.flatMap(r => r.pic))].sort();
+  const pics = [...new Set(todos.flatMap(r => r.pic))].sort();
   const inc = incompatibles(cl);
   const av = SEC_AVISO[cl];
   $("#v-seccion").innerHTML = `
     <div class="placa color cartel${claro(cl)}" style="${claseStyle(cl)}">
-      <span class="cod">${esc(s)}</span>
+      <span class="cod${s.length > 4 ? " largo" : ""}">${esc(s)}</span>
       <div><h1>${esc(D.clases[cl])}</h1><p class="meta">${nivel}${SEP}${nenv} ${nenv === 1 ? "envase" : "envases"}${enEstante ? ` de ${D.capacidad}` : ""}</p></div>
       ${enEstante ? localizador(s) : `<span class="fuera">${icon("map-pin", "fill")}Fuera del estante</span>`}
     </div>
@@ -132,18 +146,26 @@ const RUTAS = ["Ojos", "Piel", "Inhalación", "Ingestión"];
 let viaSel = RUTAS[0];
 function openFicha(id, push = true){
   const r = RI[id]; if (!r) return;
-  if (fichaId !== id) viaSel = RUTAS[0];
+  const dlg = $("#ficha"), abierta = dlg.open && !dlg.classList.contains("saliendo");
+  // Cambiar de envase del mismo producto conserva la vía elegida; otro producto arranca en Ojos.
+  const mismo = abierta && RI[fichaId]?.nom === r.nom;
+  if (!mismo) viaSel = RUTAS[0];
   fichaId = id;
   // pushState para que "atrás" en el celular cierre la ficha en vez de salir de la página.
-  if (location.hash !== "#" + id){ history[push ? "pushState" : "replaceState"](null, "", "#" + id); fichaPush = push; }
-  else fichaPush = false;
-  const dlg = $("#ficha");
+  // Con la ficha ya abierta (cambio de envase) se reemplaza: "atrás" la sigue cerrando de una vez.
+  if (location.hash !== "#" + id){
+    if (push && !abierta){ history.pushState(null, "", "#" + id); fichaPush = true; }
+    else { history.replaceState(null, "", "#" + id); if (!abierta) fichaPush = false; }
+  } else if (!abierta) fichaPush = false;
   dlg.classList.remove("saliendo");
+  dlg.classList.toggle("quieta", mismo);
   dlg.innerHTML = fichaHTML(r);
   if (!dlg.open) dlg.showModal();
-  dlg.scrollTop = 0;
+  if (!mismo) dlg.scrollTop = 0;
+  document.title = `${r.nom} · Laboratorio EMBV`;
   // El foco va al título (lo anuncia el lector de pantalla) y no al botón de cerrar.
-  $("#fh-t").focus({preventScroll: true});
+  if (mismo) $(`[data-envase="${id}"]`)?.focus({preventScroll: true});
+  else $("#fh-t").focus({preventScroll: true});
 }
 // Cierra con la animación de bajada; el evento "close" del diálogo maneja el historial.
 function closeFicha(animar = true){
@@ -167,10 +189,12 @@ function fichaHTML(r){
   const inc = incompatibles(r.cl).map(k => D.clasesCorto[k]);
   const f = r.fds;
   const gen = r.vias.find(v => v.t === "Medida general");
-  let n = 0; const e = () => `entra" style="--i:${n++}`;
+  const g = hermanos(r);
+  // La cascada arranca por los primeros auxilios (--i:0): es lo que se vino a buscar.
+  let n = 1; const e = () => `entra" style="--i:${n++}`;
   return `<div class="hcab"><div class="asa" aria-hidden="true"></div><div class="t"><div>
       <h2 id="fh-t" tabindex="-1">${esc(r.nom)}</h2>
-      <div class="sig">${sig(r.sen)}<span class="id">${r.id}</span>${r.baja ? `<span class="etq">Uso desaconsejado</span>` : ""}</div></div>
+      <div class="sig">${sig(r.sen)}<span class="id">${r.id}</span>${g.length > 1 ? `<span class="etq">${g.length} envases</span>` : ""}${r.baja ? `<span class="etq">Uso desaconsejado</span>` : ""}</div></div>
       <button class="cerrar" type="button" data-close aria-label="Cerrar ficha">${icon("x")}</button></div></div>
   <div class="hcuerpo">
     <div class="identidad ${e()}"><div class="pics">${r.pic.map(p => picto(p, 58)).join("")}</div>${nfpa(r.nfpa, 58)}</div>
@@ -179,7 +203,7 @@ function fichaHTML(r){
       <a class="tel" href="tel:100">${icon("fire", "fill")}<span><small>Bomberos</small><b>100</b></span></a>
       <a class="tel ancho" href="tel:08003330160">${icon("first-aid", "fill")}<span><small>Intoxicaciones (CNI)</small><b>0800-333-0160</b></span></a>
     </div>
-    <div class="${e()}">${placa("verde", "first-aid", "Primeros auxilios", `${gen ? `<p class="gen">${may(gen.d)}</p>` : ""}<div id="via">${viaHTML(r)}</div>`)}</div>
+    <div class="entra" style="--i:0">${placa("verde", "first-aid", "Primeros auxilios", `<div id="via">${viaHTML(r)}</div>${gen ? `<p class="gen">${may(gen.d)}</p>` : ""}`)}</div>
     <div class="dos ${e()}">
       ${placa("amarillo", "warning", "Si se derrama", `<p>${r.derrame}</p>`)}
       ${placa("rojo", "fire-extinguisher", "Si hay fuego", `<p>${r.fuego}</p>`)}
@@ -189,6 +213,7 @@ function fichaHTML(r){
     <div class="placa prohibido ${e()}">${PROHIBIDO}<div><b>No guardar junto a</b><p>${esc(r.inc)}${inc.length ? `. Clases del estante: ${inc.map(esc).join(", ")}.` : ""}</p></div></div>
     <div class="placa ${e()}"><h3 class="h3">Dónde se guarda</h3>
       <div class="grupo"><button class="seccion-chip${claro(r.cl)}" type="button" data-sec="${esc(r.dest)}" style="${claseStyle(r.cl)}">${icon("map-pin", "fill")}${esc(secLabel(r.dest))}</button>
+      ${g.length > 1 ? `<div class="envases" role="group" aria-label="${g.length} envases de este producto: elegí el código de la etiqueta">${g.map(x => `<button type="button" data-envase="${x.id}" aria-pressed="${x.id === r.id}"><b>${x.id}</b>${cantidad(x) ? `<span>${esc(cantidad(x))}</span>` : ""}</button>`).join("")}</div>` : ""}
       <dl class="datos">
         <dt>Clase</dt><dd>${esc(D.clases[r.cl])}</dd>
         ${r.form && r.form !== "—" ? `<dt>Fórmula</dt><dd>${r.form}</dd>` : ""}
@@ -221,10 +246,11 @@ function cambiarVia(t){
 
 // ---------- estante ----------
 function celda(cl, conLista = false){
-  const s = D.seccion[cl], rs = R.filter(r => r.dest === s), env = rs.reduce((t, r) => t + r.nenv, 0);
+  const s = D.seccion[cl], rs = R.filter(r => r.dest === s), env = rs.reduce((t, r) => t + r.nenv, 0), np = unicos(rs).length;
+  // Cada mitad del conteo va entera: el separador no puede quedar al principio de un renglón.
   return `<button class="celda${claro(cl)}" type="button" data-sec="${s}" style="${claseStyle(cl)}">
     <span class="sc">${esc(secLabel(s))}</span>
-    <span><span class="cn">${esc(conLista ? D.clases[cl] : D.clasesCorto[cl])}</span><br><span class="cap">${rs.length} reactivos${SEP}${env} envases</span></span></button>`;
+    <span><span class="cn">${esc(conLista ? D.clases[cl] : D.clasesCorto[cl])}</span><br><span class="cap"><span class="nw">${np} ${np === 1 ? "producto" : "productos"}</span>${SEP}<span class="nw">${env} envases</span></span></span></button>`;
 }
 function renderEstante(){
   $("#shelf").innerHTML = `
@@ -253,13 +279,13 @@ function renderEmergencia(){ renderEsearch(); }
 function renderEsearch(){
   const q = $("#eq").value.trim();
   if (!q){ $("#eres").innerHTML = `<p class="cuenta">Muestra los primeros auxilios, cómo apagar un incendio y cómo contener un derrame de ese producto.</p>`; return; }
-  const list = R.filter(r => match(r, q)).slice(0, 4);
+  const list = unicos(R.filter(r => match(r, q))).slice(0, 3);
   $("#eres").innerHTML = list.length ? list.map(r => `<div class="placa grupo">
-      <div class="identidad" style="justify-content:space-between"><div><h3 style="font-size:1.2rem;font-weight:800">${esc(r.nom)}</h3><div class="sig" style="margin-top:4px">${sig(r.sen)}</div></div><div class="pics" style="display:flex;gap:4px">${r.pic.map(p => picto(p, 40)).join("")}</div></div>
+      <div class="identidad" style="justify-content:space-between"><div><h3 style="font-size:1.2rem;font-weight:800">${esc(r.nom)}</h3><div class="sig" style="margin-top:4px">${sig(r.sen)}<span class="id mono">${hermanos(r).map(x => x.id).join(" · ")}</span></div></div><div class="pics" style="display:flex;gap:4px">${r.pic.map(p => picto(p, 40)).join("")}</div></div>
       <ul class="frases aux">${r.vias.filter(v => RUTAS.includes(v.t)).map(v => `<li><span><b>${esc(v.t)}:</b> ${v.d}</span></li>`).join("")}</ul>
       <div class="dos">${placa("amarillo", "warning", "Si se derrama", `<p>${r.derrame}</p>`)}${placa("rojo", "fire-extinguisher", "Si hay fuego", `<p>${r.fuego}</p>`)}</div>
       <button class="btn" type="button" data-r="${r.id}" style="justify-self:start">Ver la ficha completa${icon("caret-right")}</button></div>`).join("")
-    : placa("rojo", "warning", "No está en el inventario", `<p>Si no se sabe qué es, tratarlo como peligroso: avisar, alejarse y llamar al <b>107</b>.</p>`);
+    : placa("rojo", "warning", "No está en el inventario", `<p>Si no se sabe qué es, tratarlo como peligroso: avisar, alejar a todos y llamar al <a href="tel:107"><b>107</b></a>. Intoxicaciones: <a href="tel:08003330160"><b>0800-333-0160</b></a>.</p>`);
 }
 
 // ---------- aprender ----------
@@ -273,6 +299,7 @@ document.addEventListener("click", e => {
   if (aprender.click(e, irLeccion)) return;
   const go = e.target.closest("[data-go]"); if (go){ setView(go.dataset.go); return; }
   const vb = e.target.closest("[data-v]"); if (vb){ if (vb.dataset.v === "aprender") curLec = null; setView(vb.dataset.v); return; }
+  const env = e.target.closest("[data-envase]"); if (env){ openFicha(env.dataset.envase, false); return; }
   const rb = e.target.closest("[data-r]"); if (rb){ e.preventDefault(); openFicha(rb.dataset.r); return; }
   if (e.target.closest("[data-close]")){ closeFicha(); return; }
   const via = e.target.closest("[data-via]"); if (via){ cambiarVia(via.dataset.via); return; }
@@ -282,6 +309,7 @@ document.addEventListener("click", e => {
 // historial (así "atrás" no repite la misma vista); si se entró directo por un
 // enlace #R001, se reemplaza por la vista de fondo.
 $("#ficha").addEventListener("close", () => {
+  document.title = tituloVista();
   if (!/^#R\d+$/i.test(location.hash)) return;
   if (fichaPush){ fichaPush = false; history.back(); }
   else history.replaceState(null, "", "#" + viewHash());
@@ -294,6 +322,9 @@ $("#eq").addEventListener("input", renderEsearch);
 // ---------- navegación ----------
 const VIEWS = ["reactivos", "estante", "aprender", "emergencia", "seccion"];
 const viewHash = () => view === "seccion" ? curSec : view === "aprender" && curLec ? "aprender/" + curLec : view;
+// El título de la pestaña dice dónde se está (historial, pestañas abiertas, lector de pantalla).
+const TITULO = {reactivos: "Reactivos", estante: "Estante", aprender: "Aprender", emergencia: "Si pasa algo"};
+const tituloVista = () => `${view === "seccion" ? `${curSec} · ${D.clasesCorto[SEC[curSec]] || ""}` : TITULO[view]} · Laboratorio EMBV`;
 let primera = true;
 function setView(v){
   if (!VIEWS.includes(v) || (v === "seccion" && !curSec)) v = "reactivos";
@@ -302,6 +333,7 @@ function setView(v){
     for (const x of VIEWS) $("#v-" + x).hidden = x !== v;
     document.querySelectorAll("[data-v]").forEach(b => b.dataset.v === v ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
     ({reactivos: renderReactivos, estante: renderEstante, emergencia: renderEmergencia, seccion: renderSeccion, aprender: () => aprender.render(curLec)})[v]();
+    if (!$("#ficha").open) document.title = tituloVista();
     window.scrollTo(0, 0);
   };
   if (location.hash !== "#" + viewHash()) history.replaceState(null, "", "#" + viewHash());

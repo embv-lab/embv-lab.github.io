@@ -126,7 +126,7 @@ export function crearAprender(k){
     const n = LECCIONES.filter(l => hecho(l.id)).length;
     return `<div><h1 class="vt">Aprender</h1>
       <p class="lede">Seis lecciones cortas para leer una etiqueta, entender los símbolos y saber qué hacer. Salen del manual de capacitación del laboratorio.</p></div>
-      <div class="progreso" role="img" aria-label="${n} de ${LECCIONES.length} lecciones vistas"><div class="barra"><i style="width:${Math.round(100 * n / LECCIONES.length)}%"></i></div><span>${n} de ${LECCIONES.length} lecciones vistas</span></div>
+      <div class="progreso" role="img" aria-label="${n} de ${LECCIONES.length} lecciones vistas"><div class="barra"><i style="transform:scaleX(${(n / LECCIONES.length).toFixed(3)})"></i></div><span>${n} de ${LECCIONES.length} lecciones vistas</span></div>
       <ul class="lista lecciones">${LECCIONES.map(l => `<li><button class="fila lec" type="button" data-a="ir" data-arg="${l.id}">
         <span class="lec-ic${hecho(l.id) ? " ok" : ""}">${icon(hecho(l.id) ? "check-circle" : l.ic, "fill")}</span>
         <span class="n"><b>${l.t}</b><span class="meta">${l.d}</span></span>
@@ -282,7 +282,7 @@ export function crearAprender(k){
     })();
     return `<p class="lede">Dos frascos reales del estante. ¿Se pueden guardar juntos?</p>
       <div class="marcador" aria-label="Ronda ${s.ronda + 1} de ${RONDAS}">${Array.from({length: RONDAS}, (_, i) => `<i class="${i < s.ronda ? "ya" : i === s.ronda ? "on" : ""}"></i>`).join("")}<span>Ronda ${s.ronda + 1} de ${RONDAS}${SEP}${s.aciertos} ${s.aciertos === 1 ? "acierto" : "aciertos"}</span></div>
-      <div class="par">${frascoMini(a)}<span class="mas" aria-hidden="true">+</span>${frascoMini(b)}</div>
+      <div class="par">${frascoMini(a)}<span class="signo-mas" aria-hidden="true">+</span>${frascoMini(b)}</div>
       <div class="opciones-juego">${OPC.map(([v, ic, t]) => `<button class="btn opc${s.resp != null ? (v === n ? " correcta" : v === s.resp ? " mal" : "") : ""}" type="button" data-a="juntos" data-arg="${v}" ${s.resp != null ? "disabled" : ""}>${icon(ic, "fill")}${t}</button>`).join("")}</div>
       ${fb}
       ${s.resp != null ? `<button class="btn pri" type="button" data-a="juntos-sig" style="justify-self:start">${s.ronda + 1 < RONDAS ? "Otro par" : "Ver resultado"}${icon("arrow-right")}</button>` : ""}`;
@@ -298,7 +298,7 @@ export function crearAprender(k){
       <div class="nav-pasos"><button class="btn redondo" type="button" data-a="regla" data-arg="-1" aria-label="Regla anterior" ${s.i ? "" : "disabled"}>${icon("arrow-left")}</button>
         <span class="cuenta">${s.i + 1} de ${REGLAS.length}</span>
         <button class="btn redondo" type="button" data-a="regla" data-arg="1" aria-label="Regla siguiente" ${s.i < REGLAS.length - 1 ? "" : "disabled"}>${icon("arrow-right")}</button></div>
-      <div class="barra" style="max-width:420px;justify-self:center;width:100%"><i style="width:${Math.round(100 * (s.i + 1) / REGLAS.length)}%"></i></div>`;
+      <div class="barra" style="max-width:420px;justify-self:center;width:100%"><i style="transform:scaleX(${((s.i + 1) / REGLAS.length).toFixed(3)})"></i></div>`;
   }
 
   // ---------- 6. Autoevaluación ----------

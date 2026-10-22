@@ -9,9 +9,7 @@
 <meta name="theme-color" content="#0d1012" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;700;800&family=Overpass+Mono:wght@600;700&display=swap">
+<link rel="preload" href="tipografia/overpass.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
@@ -32,7 +30,22 @@
   </div>
 </header>
 
+<!-- La barra inferior va acá en el código (se ve abajo): así es de lo primero que se alcanza con el
+     teclado. Al final quedaba detrás de las 117 filas de la lista. -->
+<nav class="dock" aria-label="Secciones (barra inferior)">
+  <button type="button" data-v="reactivos"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-magnifying-glass-bold"/></svg>Reactivos</button>
+  <button type="button" data-v="estante"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-squares-four-bold"/></svg>Estante</button>
+  <button type="button" data-v="aprender"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-graduation-cap-bold"/></svg>Aprender</button>
+  <button type="button" data-v="emergencia"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-siren-bold"/></svg>Emergencia</button>
+</nav>
+
 <main id="main">
+
+<!-- Mientras llegan los datos: lo único que no puede esperar. app.js lo saca al cargar. -->
+<div class="cargando" id="cargando" role="status">
+  <p>Cargando las fichas…</p>
+  <p>Ante una emergencia: <a href="tel:107"><b>107</b></a> · Bomberos <a href="tel:100"><b>100</b></a> · Intoxicaciones <a href="tel:08003330160"><b>0800-333-0160</b></a></p>
+</div>
 
 <!-- Sección del estante: destino del QR de cada cartel -->
 <section class="view" id="v-seccion" hidden></section>
@@ -93,29 +106,40 @@
       <a class="tel ancho" href="tel:08003330160"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-first-aid-fill"/></svg><span><small>Intoxicaciones (CNI)</small><b>0800-333-0160</b></span></a>
     </div>
   </div>
-  <ol class="pasos">
-    <li><span><b>Avisar</b><span>En voz alta al docente. Aunque parezca poca cosa.</span></span></li>
-    <li><span><b>Alejarse</b><span>Apartarse de la zona, sin correr.</span></span></li>
-    <li><span><b>No intervenir</b><span>Las alumnas y los alumnos no limpian derrames ni usan extintores.</span></span></li>
-  </ol>
-  <div class="dos">
-    <div class="placa color verde">
-      <div class="cab"><span class="simbolo"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-eye-fill"/></svg></span><h3>Salpicadura en los ojos</h3></div>
-      <p>Al agua ya, y <b>quince minutos sin parar</b>, con el párpado abierto. Derivar siempre al médico.</p>
-    </div>
-    <div class="placa color verde">
-      <div class="cab"><span class="simbolo"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-hand-palm-fill"/></svg></span><h3>Quemadura con ácido o base</h3></div>
-      <p>Agua abundante, <b>diez minutos</b>. No frotar, no neutralizar, no poner cremas ni pomadas.</p>
+  <!-- Quien abre esta vista es el docente o el ayudante, con alguien salpicado al lado: primero el
+       agua, después el producto, al final el protocolo. Textos del plan de emergencias (doc. 08). -->
+  <div class="grupo">
+    <h2 class="h3">Salpicadura: primero, agua</h2>
+    <div class="agua">
+      <div class="placa color verde">
+        <div class="cab"><span class="simbolo"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-eye-fill"/></svg></span><h3>Ojos</h3></div>
+        <p class="min"><b>15</b> minutos como mínimo</p>
+        <p>Al lavaojos o a la canilla, ya. Párpado abierto. Siempre al médico.</p>
+      </div>
+      <div class="placa color verde">
+        <div class="cab"><span class="simbolo"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-hand-palm-fill"/></svg></span><h3>Piel</h3></div>
+        <p class="min"><b>15</b> minutos como mínimo</p>
+        <p>Sacale la ropa mojada. No frotes, no neutralices, sin cremas.</p>
+      </div>
     </div>
   </div>
   <div class="grupo">
-    <h2 style="font-size:1.25rem;font-weight:800">¿Qué producto es?</h2>
+    <h2 class="h3">¿Qué producto fue?</h2>
     <label class="buscar">
       <span class="sr">Buscar el producto de la emergencia</span>
       <svg class="ic" aria-hidden="true"><use href="iconos.svg#i-magnifying-glass-bold"/></svg>
       <input type="search" id="eq" placeholder="Escribí el nombre del frasco" autocomplete="off" enterkeyhint="search">
     </label>
     <div id="eres" class="resultados"></div>
+  </div>
+  <div class="grupo">
+    <h2 class="h3">Los tres primeros movimientos</h2>
+    <ol class="pasos">
+      <li><span><b>Avisar</b><span>En voz alta, sin correr. Al docente y al ayudante de laboratorio.</span></span></li>
+      <li><span><b>Alejar</b><span>Sacar a las personas de la zona y ventilar.</span></span></li>
+      <li><span><b>Actuar</b><span>Sólo quien está capacitado y sólo si es seguro. Ante la duda, evacuar y llamar.</span></span></li>
+    </ol>
+    <p class="nota">Las alumnas y los alumnos sólo avisan y se alejan: no limpian derrames ni usan extintores.</p>
   </div>
 </section>
 
@@ -126,13 +150,6 @@
   <p>Resumen de las fichas de seguridad del sistema de almacenaje del laboratorio (Recomendación N.º 9/13, CoMiSaSEP). No reemplaza la ficha de datos de seguridad del proveedor ni la carpeta impresa que está en el laboratorio.</p>
   <p id="ver-datos"></p>
 </footer>
-
-<nav class="dock" aria-label="Secciones de la página">
-  <button type="button" data-v="reactivos"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-magnifying-glass-bold"/></svg>Reactivos</button>
-  <button type="button" data-v="estante"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-squares-four-bold"/></svg>Estante</button>
-  <button type="button" data-v="aprender"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-graduation-cap-bold"/></svg>Aprender</button>
-  <button type="button" data-v="emergencia"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-siren-bold"/></svg>Emergencia</button>
-</nav>
 
 <dialog class="hoja" id="ficha" aria-labelledby="fh-t"></dialog>
 

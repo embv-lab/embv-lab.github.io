@@ -39,7 +39,11 @@ El tema sigue al sistema (`prefers-color-scheme`).
   vial. Títulos en 800 con tracking −0,01em; títulos de placa en mayúsculas, 800, tracking 0,04em.
 - **Overpass Mono** (600, 700): sólo para datos y códigos: códigos de sección (`E1-4`), de reactivo
   (`R024`), CAS, teléfonos.
-- Cuerpo 17px, interlineado 1,5. Código de sección en la placa: `clamp(3.2rem, 16vw, 5.6rem)`.
+- Cuerpo 17px, interlineado 1,5. Código de sección en la placa: `clamp(3.2rem, 16vw, 5.6rem)`
+  (`CAJA-RE` y `MATERIAL`, más chico y sin partirse).
+- Las dos son variables y se sirven desde `tipografia/` (subconjunto latino, licencia OFL), no desde
+  Google Fonts: la página no depende de otro servidor y el service worker las guarda.
+- Campos y selectores a 16px justos (con menos, iOS hace zoom al tocarlos).
 
 ## Forma
 
@@ -51,13 +55,23 @@ El tema sigue al sistema (`prefers-color-scheme`).
 ## Componentes
 
 - **Placa de sección** (destino del QR): color de la clase, código gigante en mono, nombre de la clase,
-  localizador "Usted está aquí" (estante 2 × 6 de frente, la sección marcada con un pulso).
+  localizador "Estás acá" (estante 2 × 6 de frente sobre fondo oscuro translúcido, la sección marcada
+  con un pulso).
 - **Lista de reactivos:** placa blanca con filas; palabra de advertencia, código, fórmula, pictogramas
-  SGA oficiales a la derecha y chevron.
+  SGA oficiales a la derecha y chevron. Los envases del mismo producto (R050, R051, R052) van en **una
+  sola fila** con todos sus códigos y la cantidad de envases.
 - **Ficha:** hoja que sube desde abajo (celular) o panel lateral (≥ 900px). Orden: pictogramas y rombo
-  NFPA, teléfonos, placa verde de primeros auxilios con control segmentado por vía (Ojos, Piel,
-  Inhalación, Ingestión), placas amarilla (derrame) y roja (fuego), placa azul (protección), peligros,
-  "No guardar junto a", dónde se guarda, y lo técnico plegado.
+  NFPA, teléfonos, placa verde de primeros auxilios (control segmentado por vía: Ojos, Piel,
+  Inhalación, Ingestión; **la instrucción de la vía va antes que la medida general**), placas amarilla
+  (derrame) y roja (fuego), placa azul (protección), peligros, "No guardar junto a", dónde se guarda
+  (con el selector de envase si hay varios) y lo técnico plegado. La instrucción de la vía tiene que
+  entrar en la primera pantalla aun a 320 × 568: en pantallas bajas la hoja ocupa todo el alto, los
+  teléfonos van en una fila y los pictogramas achican. `herramientas/auditoria.mjs` lo verifica.
+- **Emergencia:** la abre el docente o el ayudante con alguien salpicado al lado. Orden: placa roja con
+  los teléfonos; "Salpicadura: primero, agua" con dos placas verdes lado a lado (Ojos y Piel, **15**
+  grande y "minutos como mínimo"); "¿Qué producto fue?"; los tres movimientos del plan de emergencias
+  (Avisar, Alejar, Actuar) y, al final, la regla de los alumnos.
+- **Estante:** celdas de 2 columnas en el celular angosto, 3 desde 430px y 6 desde 720px.
 - **Aprender:** índice como lista de placas con ícono por lección y barra de progreso verde. Cada
   lección tiene un enlace propio (`#aprender/etiqueta`, `…/pictogramas`, `…/rombo`, `…/juntos`,
   `…/reglas`, `…/evaluacion`). La etiqueta interactiva es blanca en los dos temas (es el papel del
@@ -65,8 +79,12 @@ El tema sigue al sistema (`prefers-color-scheme`).
   grande tiene cuadrantes tocables que crecen al elegirlos. Las respuestas correctas van en verde y
   las incorrectas en rojo. El progreso se guarda en el navegador.
 - **Prohibición:** señal de prohibición dibujada (círculo y diagonal rojos) + texto.
-- **Navegación:** barra inferior de 3 pestañas en el celular (Reactivos, Estante, Emergencia); arriba
-  en pantallas anchas, con el botón rojo Emergencia a la derecha.
+- **Navegación:** barra inferior de 4 pestañas en el celular (Reactivos, Estante, Aprender,
+  Emergencia), que en el código va justo después de la cabecera para alcanzarla rápido con el teclado;
+  arriba en pantallas anchas, con el botón rojo Emergencia a la derecha. El título de la pestaña del
+  navegador dice la vista o el producto abierto.
+- **Objetivos táctiles:** 44px como mínimo en todo (las partes de la etiqueta de Aprender agrandan su
+  área con un `::after` para no deformar el dibujo).
 
 ## Íconos y pictogramas
 
@@ -80,6 +98,7 @@ Unicode como íconos.
 Una sola curva: `cubic-bezier(.16, 1, .3, 1)`.
 - Momento firma: la ficha sube (0,5 s) y sus placas entran en cascada (55 ms entre una y otra).
 - El indicador de la vía se desliza (0,4 s) y el texto entra con un corrimiento corto.
+- La cascada empieza por la placa verde de primeros auxilios: es lo que se vino a buscar.
 - El localizador pulsa dos veces al abrir una sección.
 - Transición cruzada entre vistas (View Transitions, 0,22 s).
 - `prefers-reduced-motion` anula todo.
