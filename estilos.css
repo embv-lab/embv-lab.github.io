@@ -600,7 +600,9 @@ dialog.hoja.desde-frasco[open],dialog.hoja.sin-css,dialog.hoja.sin-css::backdrop
 .ro-h{padding:4px 9px;font-size:.74rem;border-bottom:1.5px solid #111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ro-pie{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 9px 5px;font-size:.76rem}
 .ro-pie .mono{font-weight:700}
-.pila{position:relative;scroll-margin-top:78px;touch-action:pan-y;overflow:hidden;margin:0 -6px;padding:0 6px;transition:height .35s var(--ease)}
+/* La altura cambia sin transición: animarla recalculaba el layout de la hoja en cada cuadro.
+   El movimiento lo llevan las placas, con transform. */
+.pila{position:relative;scroll-margin-top:78px;touch-action:pan-y;overflow:hidden;margin:0 -6px;padding:0 6px}
 .carta{position:absolute;left:6px;top:0;width:calc(100% - 28px);transition:transform .45s var(--ease),opacity .35s var(--ease)}
 .pila.arrastrando .carta{transition:none}
 .carta .cab .n{margin-left:auto;font-size:.76rem;font-weight:700}
