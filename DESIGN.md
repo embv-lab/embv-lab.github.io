@@ -39,8 +39,9 @@ El tema sigue al sistema (`prefers-color-scheme`).
   vial. Títulos en 800 con tracking −0,01em; títulos de placa en mayúsculas, 800, tracking 0,04em.
 - **Overpass Mono** (600, 700): sólo para datos y códigos: códigos de sección (`E1-4`), de reactivo
   (`R024`), CAS, teléfonos.
-- Cuerpo 17px, interlineado 1,5. Código de sección en la placa: `clamp(3.2rem, 16vw, 5.6rem)`
-  (`CAJA-RE` y `MATERIAL`, más chico y sin partirse).
+- Cuerpo 17px, interlineado 1,5. Código de sección en el cartel: `clamp(2rem, 11vw, 3.4rem)`
+  (`CAJA-RE` y `MATERIAL`, más chico y sin partirse). La fórmula de cada frasco del estante va en
+  Overpass 800 con subíndices, ajustada al ancho de la etiqueta.
 - Las dos son variables y se sirven desde `tipografia/` (subconjunto latino, licencia OFL), no desde
   Google Fonts: la página no depende de otro servidor y el service worker las guarda.
 - Campos y selectores a 16px justos (con menos, iOS hace zoom al tocarlos).
@@ -54,24 +55,64 @@ El tema sigue al sistema (`prefers-color-scheme`).
 
 ## Componentes
 
-- **Placa de sección** (destino del QR): color de la clase, código gigante en mono, nombre de la clase,
-  localizador "Estás acá" (estante 2 × 6 de frente sobre fondo oscuro translúcido, la sección marcada
-  con un pulso).
-- **Lista de reactivos:** placa blanca con filas; palabra de advertencia, código, fórmula, pictogramas
-  SGA oficiales a la derecha y chevron. Los envases del mismo producto (R050, R051, R052) van en **una
-  sola fila** con todos sus códigos y la cantidad de envases.
-- **Ficha:** hoja que sube desde abajo (celular) o panel lateral (≥ 900px). Orden: pictogramas y rombo
-  NFPA, teléfonos, placa verde de primeros auxilios (control segmentado por vía: Ojos, Piel,
-  Inhalación, Ingestión; **la instrucción de la vía va antes que la medida general**), placas amarilla
-  (derrame) y roja (fuego), placa azul (protección), peligros, "No guardar junto a", dónde se guarda
-  (con el selector de envase si hay varios) y lo técnico plegado. La instrucción de la vía tiene que
-  entrar en la primera pantalla aun a 320 × 568: en pantallas bajas la hoja ocupa todo el alto, los
-  teléfonos van en una fila y los pictogramas achican. `herramientas/auditoria.mjs` lo verifica.
+- **Navegación:** cuatro pestañas, en la barra inferior en el celular y arriba en pantallas anchas:
+  **Estante** (el inicio y el destino de los QR), **Buscar** (todos los reactivos), **Aprender** y
+  **Emergencia** (en rojo, siempre a un toque; arriba también como botón rojo con la sirena). En el
+  código la barra inferior va justo después de la cabecera para alcanzarla rápido con el teclado.
+  El título de la pestaña del navegador dice la vista, la sección o el producto abierto.
+- **Estante** (`estante.js`): lo que el docente tiene adelante.
+  - **Cartel impreso de la sección:** la misma composición del cartel de 16,4 × 6 cm pegado en el
+    estante (`gen_carteles.py` del repositorio privado): papel blanco con borde negro en los dos
+    temas, el código grande en mono sobre el color de la clase, la clase, "N envases de 14 de
+    capacidad" y el nivel, los pictogramas de la sección, los avisos del cartel (oxidantes, caja de
+    riesgo especial) y, en rojo, "NO almacenar aquí".
+  - **El estante dibujado de frente** (SVG, sin imágenes): 2 estantes × 6 secciones, la caja de
+    riesgo especial con su balde de arena y el material didáctico. Un frasco por envase (botella si
+    es líquido, pote si es sólido), agrupados por producto; con más de 7 envases van en dos filas,
+    la de atrás sobre un escalón. Cada sección tiene su caja del color de la clase y el cartel en
+    chico sobre el larguero. La etiqueta de cada frasco muestra la **fórmula** grande (o un nombre
+    corto si no hay fórmula) y el código R chico.
+  - **Cámara:** la sección del QR queda encendida y llena el visor, con las vecinas atenuadas a los
+    costados. Elegir otra sección (tocándola, deslizando o desde el plano) mueve la cámara por el
+    estante; si queda lejos, se aleja para mostrar el recorrido. Sin sección (`#estante`), se ve el
+    estante entero.
+  - **Lista de la sección** enlazada con el estante: señalar una fila marca su frasco en azul y
+    tocar un frasco marca su fila. Tocar una fila abre la ficha de una (el camino rápido para la
+    emergencia), y la etiqueta sale de su frasco.
+  - **Plano** de las secciones (seis por fila, 44 px aun a 320) y el verificador "¿Se pueden guardar
+    juntos?".
+- **Frasco en foco:** tocar un frasco lo acerca (zoom de la cámara) y lo deja grande y legible,
+  con el resto atenuado; sube una tarjeta con el nombre completo, la fórmula, la palabra de
+  advertencia, los pictogramas y dos botones grandes: **Primeros auxilios** (verde: abre la ficha
+  en la placa verde) y **Ver ficha**. Flechas y deslizar pasan al frasco vecino sin salir. Se sale
+  tocando afuera, arrastrando la tarjeta hacia abajo, con la X, con Esc o con "atrás".
+- **Ficha:** hoja que sube desde abajo (celular) o panel lateral (≥ 900 px). Arriba, la
+  **etiqueta del frasco** (réplica de la etiqueta pegada en el envase: nombre, fórmula y CAS,
+  pictogramas, palabra de advertencia, rombo NFPA, frases H, sección y código), blanca en los dos
+  temas. Debajo, las **placas de seguridad apiladas**: Primeros auxilios (verde, con el control por
+  vía: Ojos, Piel, Inhalación, Ingestión; **la instrucción de la vía va antes que la medida
+  general**), Si se derrama (amarillo), Si hay fuego (rojo), Protección obligatoria (azul) y Ficha
+  completa. La placa activa va adelante y las siguientes asoman detrás; se pasan deslizando de
+  costado o con los botones del índice. Después, los teléfonos. Se cierra arrastrando hacia abajo
+  la cabecera o la etiqueta (umbral y velocidad), con la X, con Esc o con "atrás"; la sirena roja
+  de la cabecera lleva a Emergencia. La instrucción de Ojos entra en la primera pantalla aun a
+  320 × 568 (en pantallas bajas la etiqueta se compacta); `herramientas/auditoria.mjs` lo verifica.
+- **Ficha completa:** todo lo que hay en los datos, ordenado como las secciones de una ficha de
+  datos de seguridad, en plegables numerados: 1 Identificación (con el inventario de cada envase),
+  2 Peligros (todas las frases H y P con su texto, pictogramas y rombo), 4 Primeros auxilios,
+  5 Incendio, 6 Derrame, 7 Manipulación y almacenamiento (con las incompatibilidades, dónde se
+  guarda y el selector de envase), 8 Protección, 9 Propiedades, 11 Toxicología, 12 Ecología,
+  13 Eliminación y 14 Transporte. Las secciones 9, 11, 12 y 14 existen para los 37 reactivos con
+  ficha completa. Rótulo de la fuente: documentos 04 y 05.
+- **Lavado de 15 minutos** (`lavado.js`): se lanza desde Ojos o Piel cuando los datos piden 15
+  minutos, y desde las placas de Emergencia. La etiqueta queda arriba, chica, y el anillo ocupa el
+  centro con la cuenta grande; Pausar/Reanudar y Terminar (pide un segundo toque). Calcula con la
+  hora del sistema, así que sigue bien con la pantalla apagada; pide Wake Lock si puede y vibra al
+  terminar. Minimizado, queda una píldora verde con el tiempo, a un toque desde cualquier vista.
 - **Emergencia:** la abre el docente o el ayudante con alguien salpicado al lado. Orden: placa roja con
   los teléfonos; "Salpicadura: primero, agua" con dos placas verdes lado a lado (Ojos y Piel, **15**
-  grande y "minutos como mínimo"); "¿Qué producto fue?"; los tres movimientos del plan de emergencias
-  (Avisar, Alejar, Actuar) y, al final, la regla de los alumnos.
-- **Estante:** celdas de 2 columnas en el celular angosto, 3 desde 430px y 6 desde 720px.
+  grande, "minutos como mínimo" y el botón para contar el lavado); "¿Qué producto fue?"; los tres
+  movimientos del plan de emergencias (Avisar, Alejar, Actuar) y, al final, la regla de los alumnos.
 - **Aprender:** índice como lista de placas con ícono por lección y barra de progreso verde. Cada
   lección tiene un enlace propio (`#aprender/etiqueta`, `…/pictogramas`, `…/rombo`, `…/juntos`,
   `…/reglas`, `…/evaluacion`). La etiqueta interactiva es blanca en los dos temas (es el papel del
@@ -79,12 +120,13 @@ El tema sigue al sistema (`prefers-color-scheme`).
   grande tiene cuadrantes tocables que crecen al elegirlos. Las respuestas correctas van en verde y
   las incorrectas en rojo. El progreso se guarda en el navegador.
 - **Prohibición:** señal de prohibición dibujada (círculo y diagonal rojos) + texto.
-- **Navegación:** barra inferior de 4 pestañas en el celular (Reactivos, Estante, Aprender,
-  Emergencia), que en el código va justo después de la cabecera para alcanzarla rápido con el teclado;
-  arriba en pantallas anchas, con el botón rojo Emergencia a la derecha. El título de la pestaña del
-  navegador dice la vista o el producto abierto.
-- **Objetivos táctiles:** 44px como mínimo en todo (las partes de la etiqueta de Aprender agrandan su
-  área con un `::after` para no deformar el dibujo).
+- **Inflamables y el rojo de emergencia:** el rojo de la clase de inflamables (`#c8282a`) nunca va
+  solo: lleva siempre impresa la llama SGA (GHS02), en el código del cartel, en el frente de la caja
+  del estante, en el cartel chico y en el plano, como una caja rotulada. El rojo de seguridad
+  (`#9b2423`) va liso, con la sirena o el matafuego, y sólo para emergencia, fuego y prohibición.
+- **Objetivos táctiles:** 44 px como mínimo en todo (las partes de la etiqueta de Aprender agrandan su
+  área con un `::after` para no deformar el dibujo). Los frascos del dibujo no son botones: la lista
+  de la sección es el camino accesible.
 
 ## Íconos y pictogramas
 
@@ -95,13 +137,18 @@ Unicode como íconos.
 
 ## Movimiento
 
-Una sola curva: `cubic-bezier(.16, 1, .3, 1)`.
-- Momento firma: la ficha sube (0,5 s) y sus placas entran en cascada (55 ms entre una y otra).
+Una sola curva: `cubic-bezier(.16, 1, .3, 1)`. Sólo se animan `transform` y `opacity`, y nada que se
+mueva lleva desenfoque de fondo.
+- La cámara del estante: paneo entre secciones vecinas (0,48 s); a una sección lejana se aleja y se
+  vuelve a acercar (0,76 s). Las secciones se encienden y apagan con opacidad.
+- Frasco en foco: la cámara se acerca al frasco y la tarjeta sube desde abajo.
+- Momento firma: la etiqueta del frasco crece desde el frasco hasta la ficha (FLIP) y las placas se
+  despliegan desde atrás de la etiqueta, la verde primero. Al cerrar, la etiqueta vuelve al frasco.
+- La pila de placas sigue al dedo al deslizar; la hoja sigue al dedo al arrastrarla hacia abajo.
 - El indicador de la vía se desliza (0,4 s) y el texto entra con un corrimiento corto.
-- La cascada empieza por la placa verde de primeros auxilios: es lo que se vino a buscar.
-- El localizador pulsa dos veces al abrir una sección.
+- El anillo del lavado avanza segundo a segundo, con un punto que gira (transform).
 - Transición cruzada entre vistas (View Transitions, 0,22 s).
-- `prefers-reduced-motion` anula todo.
+- `prefers-reduced-motion` anula todo: cada estado aparece de una, sin esperas.
 
 ## Superficies del navegador
 

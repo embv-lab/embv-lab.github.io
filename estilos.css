@@ -19,18 +19,24 @@
   --f:"Overpass",system-ui,sans-serif; --f-mono:"Overpass Mono",ui-monospace,monospace;
   --ease:cubic-bezier(.16,1,.3,1);
   --dock:68px;
+  /* El dibujo del estante */
+  --e-pared:#d6dbdf; --e-mueble:#8d979e; --e-mueble-2:#737d84; --e-hueco:#c5ccd1; --e-luz:rgba(255,255,255,.6);
+  --e-vidrio:#f4f7f8; --e-vidrio-2:#dfe4e7; --e-borde:#5d676e; --e-liquido:#b9cbd6; --e-polvo:#e6e0d2; --e-tapa:#2b3237; --e-piso:#c3c9ce; --e-balde:#9aa3a9;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root{
   --suelo:#0d1012; --placa:#191e22; --placa-2:#21272c; --tinta:#eef1f2; --tinta-2:#a9b2b8; --linea:#2c343a; --linea-2:#3a434a;
   --rojo-suave:#2e1817; --verde-suave:#14261d; --amarillo-suave:#2b2312; --azul-suave:#151f30;
   --c-neu:#5f6a73; --c-esp:#0a0c0d;
+  --e-pared:#161b1f; --e-mueble:#3d464d; --e-mueble-2:#2c3338; --e-hueco:#0f1316; --e-luz:rgba(255,255,255,.10);
+  --e-vidrio:#2b343a; --e-vidrio-2:#20272c; --e-borde:#8e9aa2; --e-liquido:#3c5566; --e-polvo:#5a5547; --e-tapa:#0b0d0f; --e-piso:#22292e; --e-balde:#59636a;
   --sombra:0 1px 2px rgba(0,0,0,.4),0 10px 24px -12px rgba(0,0,0,.7);
   --sombra-alta:0 2px 4px rgba(0,0,0,.5),0 24px 50px -18px rgba(0,0,0,.85);
   color-scheme:dark;
 }}
 
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%;scroll-padding-top:80px}
 body{margin:0;background:var(--suelo);color:var(--tinta);font-family:var(--f);font-size:17px;line-height:1.5;
   padding-bottom:calc(var(--dock) + env(safe-area-inset-bottom,0px))}
@@ -128,29 +134,6 @@ main{max-width:1080px;margin:0 auto;padding:22px 16px 48px}
 .placa.color p{font-size:1.02rem;line-height:1.5}
 .placa.color b{font-weight:800}
 
-/* ---------- sección (destino del QR) ---------- */
-.cartel{display:grid;grid-template-columns:1fr auto;grid-template-areas:"cod loc" "txt txt";gap:10px 18px;align-items:start;background-color:var(--clase);padding:22px 22px 22px}
-.cartel>div{grid-area:txt}
-.cartel>.loc,.cartel>.fuera{grid-area:loc;justify-self:end}
-.cartel.claro{color:#14181b}
-.cartel.claro::before{border-color:rgba(20,24,27,.82)}
-.cartel .cod{grid-area:cod;font-family:var(--f-mono);font-weight:700;font-size:clamp(3.2rem,16vw,5.6rem);line-height:.9;letter-spacing:-.04em;white-space:nowrap}
-/* "CAJA-RE" y "MATERIAL" no entran al tamaño de "E1-4": se partían en dos renglones. */
-.cartel .cod.largo{font-size:clamp(2.2rem,10vw,4rem)}
-.cartel h1{font-size:clamp(1.3rem,4.6vw,1.75rem);font-weight:800}
-.cartel .meta{font-size:.95rem;opacity:.92;margin-top:4px;font-weight:600}
-/* Localizador "usted está aquí": el estante de 2 × 6 visto de frente. */
-/* Fondo oscuro translúcido (antes, claro): sobre el rojo de inflamables el rótulo blanco no llegaba a 4,5:1. */
-.loc{display:grid;grid-template-columns:repeat(6,13px);gap:3px;padding:7px 7px 6px;border-radius:9px;background:rgba(10,12,14,.28)}
-.cartel.claro .loc{background:rgba(20,24,27,.14)}
-.loc i{height:11px;border-radius:3px;background:rgba(255,255,255,.42)}
-.cartel.claro .loc i{background:rgba(20,24,27,.25)}
-.loc i.aqui{background:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.35);animation:aqui 1.6s var(--ease) .35s 2}
-.cartel.claro .loc i.aqui{background:#14181b;box-shadow:0 0 0 2px rgba(20,24,27,.25)}
-.loc-cap{grid-column:1/-1;font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;text-align:center;margin-top:3px}
-@keyframes aqui{0%{box-shadow:0 0 0 0 rgba(255,255,255,.95)}70%{box-shadow:0 0 0 9px rgba(255,255,255,0)}100%{box-shadow:0 0 0 2px rgba(255,255,255,.35)}}
-.fuera{align-self:end;display:inline-flex;align-items:center;gap:6px;font-size:.85rem;font-weight:700;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.18)}
-
 .peligros{display:flex;flex-wrap:wrap;gap:12px 14px}
 .peligros figure{margin:0;display:grid;justify-items:center;gap:4px;width:76px;text-align:center;font-size:.72rem;font-weight:700;color:var(--tinta-2);line-height:1.2}
 .prohibido{display:flex;gap:14px;align-items:flex-start}
@@ -219,8 +202,8 @@ dialog.hoja.saliendo::backdrop{animation:velo .26s ease reverse forwards}
   @keyframes sube{from{transform:translateX(40%);opacity:.4}to{transform:none;opacity:1}}
   @keyframes baja{to{transform:translateX(50%);opacity:0}}
 }
-.hcab{position:sticky;top:0;z-index:3;background:color-mix(in srgb,var(--suelo) 90%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
-  padding:10px 16px 14px;border-bottom:1px solid var(--linea)}
+/* Cabecera de la hoja con fondo pleno: la hoja se arrastra y un desenfoque sobre algo que se mueve cuesta caro. */
+.hcab{position:sticky;top:0;z-index:30;background:var(--suelo);padding:8px 12px 8px;border-bottom:1px solid var(--linea);touch-action:none;cursor:grab}
 .asa{width:44px;height:5px;border-radius:9px;background:var(--linea-2);margin:0 auto 10px}
 @media (min-width:900px){.asa{display:none}.hcab{padding-top:18px}}
 .hcab .t{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start}
@@ -229,9 +212,7 @@ dialog.hoja.saliendo::backdrop{animation:velo .26s ease reverse forwards}
 .hcab .sig{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
 .cerrar{width:44px;height:44px;border-radius:999px;border:1px solid var(--linea-2);background:var(--placa);display:grid;place-items:center;cursor:pointer;flex:none}
 .cerrar .ic{width:20px;height:20px}
-.hcuerpo{padding:16px 16px calc(28px + env(safe-area-inset-bottom,0px));display:grid;gap:14px}
-.hoja[open] .entra{animation:entra .55s var(--ease) both;animation-delay:calc(var(--i,0) * 55ms + 120ms)}
-@keyframes entra{from{opacity:0;transform:translateY(16px) scale(.985)}}
+.hcuerpo{padding:16px 16px calc(28px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
 
 .identidad{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .identidad .pics{display:flex;gap:6px;flex-wrap:wrap}
@@ -316,31 +297,6 @@ details.mas ul{margin:0;padding-left:18px;display:grid;gap:6px}
 .kv span{display:block;font-size:.76rem;font-weight:700;color:var(--tinta-2);text-transform:uppercase;letter-spacing:.04em}
 .nota{font-size:.84rem;color:var(--tinta-2)}
 
-/* ---------- estante ---------- */
-.nivel{display:grid;gap:10px}
-.nivel h2{font-size:.86rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--tinta-2)}
-/* minmax(0,…): con 1fr la columna crecía hasta el ancho de "biomoléculas" y el estante
-   desbordaba a 360 px y con zoom. */
-/* Dos columnas en celulares angostos: a tres, "Combustibles y metales" se partía con guiones. */
-.fila6{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-@media (min-width:430px){.fila6{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (min-width:720px){.fila6{grid-template-columns:repeat(6,minmax(0,1fr))}}
-.celda{position:relative;display:grid;align-content:space-between;gap:10px;min-height:112px;border:0;border-radius:16px;padding:13px 13px 12px;text-align:left;cursor:pointer;
-  background-color:var(--clase);color:#fff;box-shadow:var(--sombra);transition:transform .25s var(--ease),box-shadow .25s var(--ease);
-  background-image:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,0) 50%)}
-.celda::before{content:"";position:absolute;inset:4px;border:1.5px solid rgba(255,255,255,.8);border-radius:12px;pointer-events:none}
-.celda.claro{color:#14181b}
-.celda.claro::before{border-color:rgba(20,24,27,.75)}
-.celda:hover{transform:translateY(-3px);box-shadow:var(--sombra-alta)}
-.celda .sc{font-family:var(--f-mono);font-weight:700;font-size:1.25rem;letter-spacing:-.03em}
-.celda .cn{font-weight:800;font-size:.9rem;line-height:1.2;overflow-wrap:anywhere;hyphens:auto}
-/* Productos y envases en dos renglones: en celdas angostas el separador quedaba colgando. */
-.celda .cap{display:grid;font-size:.75rem;font-weight:600;opacity:.9;margin-top:2px}
-.celda .cap .sep{display:none}
-.nw{white-space:nowrap}
-.fuera-est{display:grid;gap:10px}
-@media (min-width:720px){.fuera-est{grid-template-columns:1fr 1fr}}
-.fuera-est .celda{min-height:0}
 .leyenda{display:flex;gap:8px 16px;flex-wrap:wrap;font-size:.85rem;font-weight:600;color:var(--tinta-2)}
 .leyenda i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px;vertical-align:-1px}
 .compat{display:grid;gap:10px}
@@ -388,8 +344,6 @@ details.mas ul{margin:0;padding-left:18px;display:grid;gap:6px}
 .envases b{font-family:var(--f-mono);font-weight:700;color:var(--tinta);font-size:.95rem}
 .envases button[aria-pressed="true"]{background:var(--tinta);border-color:var(--tinta);color:var(--placa)}
 .envases button[aria-pressed="true"] b{color:var(--placa)}
-/* Al cambiar de envase no se repite la cascada de entrada. */
-.hoja.quieta .entra{animation:none}
 
 footer{max-width:1080px;margin:0 auto;padding:22px 16px 36px;color:var(--tinta-2);font-size:.84rem;display:grid;gap:6px;border-top:1px solid var(--linea)}
 footer p{max-width:75ch}
@@ -536,3 +490,198 @@ footer p{max-width:75ch}
   dialog.hoja::backdrop{animation:none!important}
 }
 @media print{.bar,.dock,footer,.tels{display:none}body{background:#fff;padding:0}.placa{box-shadow:none}}
+
+/* =====================================================================
+   Estante: el cartel impreso de la sección y el estante dibujado de frente
+   ===================================================================== */
+#v-estante{gap:16px}
+#cartel{scroll-margin-top:calc(80px + env(safe-area-inset-top,0px))}
+.est-intro .leyenda{margin-top:4px}
+/* El cartel de 16,4 × 6 cm: papel blanco, borde negro, el código grande sobre el color de la clase.
+   Blanco en los dos temas: es papel, como la etiqueta. */
+.cartel-imp{background:#fff;color:#14181b;border:2px solid #14181b;border-radius:5px;box-shadow:var(--sombra);display:grid;grid-template-columns:auto minmax(0,1fr);overflow:hidden}
+.ci-cod{background:var(--clase);color:#fff;display:flex;align-items:center;gap:8px;padding:10px 14px 8px;border-right:2px solid #14181b}
+.ci-cod.claro{color:#14181b}
+.ci-cod .cod{font-family:var(--f-mono);font-weight:700;font-size:clamp(2rem,11vw,3.4rem);line-height:1;letter-spacing:-.04em;white-space:nowrap}
+.ci-cod .cod.largo{font-size:clamp(1.3rem,6.4vw,2.2rem)}
+/* Inflamables: el rojo de la clase siempre con la llama SGA impresa, como la caja rotulada.
+   El rojo de seguridad liso queda para emergencia y fuego. */
+.ci-cod .llama{width:clamp(30px,9vw,44px);height:clamp(30px,9vw,44px)}
+.ci-cl{padding:9px 13px;align-self:center;min-width:0}
+.ci-cl h1{font-size:clamp(1.05rem,4.6vw,1.4rem);font-weight:800;line-height:1.12}
+.ci-cl p{font-size:.84rem;color:#3f474d;margin-top:3px;line-height:1.3;font-weight:600}
+.ci-cl p span{display:block}
+.ci-pics{grid-column:1/-1;border-top:1.5px solid #14181b;display:flex;gap:6px;padding:7px 11px;flex-wrap:wrap}
+.ci-pics .ghs{width:32px;height:32px}
+.ci-no{grid-column:1/-1;border-top:1.5px solid #14181b;padding:7px 11px 8px;font-size:.9rem;line-height:1.38}
+.ci-no b{color:#9b2423;font-weight:800}
+.ci-no .mono{font-size:.86em}
+.ci-aviso{grid-column:1/-1;background:#9b2423;color:#fff;font-weight:800;font-size:.9rem;line-height:1.3;padding:8px 11px;display:flex;gap:9px;align-items:center}
+.ci-aviso .ic{width:1.5em;height:1.5em}
+
+/* El visor: una ventana al estante. La cámara mueve el dibujo entero (transform). */
+.est-visor-w{display:grid;gap:8px}
+.visor{position:relative;overflow:hidden;border-radius:16px;background:var(--e-pared);box-shadow:inset 0 0 0 1px var(--linea);touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.escena{position:absolute;left:0;top:0;transform-origin:0 0;display:block}
+.escena text{font-family:var(--f)}
+.sec{opacity:.3;transition:opacity .5s var(--ease)}
+.sec.on{opacity:1}
+.sec .luz{opacity:0;transition:opacity .6s var(--ease)}
+.sec.on .luz{opacity:1}
+.visor.general .sec .luz{opacity:0}
+.sec .jar{pointer-events:none}
+.sec.on .jar{pointer-events:auto;cursor:pointer}
+.sec.on .hit-sec{pointer-events:none}
+.visor.general .sec .hit-sec{pointer-events:auto;cursor:pointer}
+.visor.general .sec .jar{pointer-events:none}
+.hit-sec{cursor:pointer}
+.jar-in{transition:opacity .3s,transform .3s var(--ease);transform-box:fill-box;transform-origin:50% 100%}
+.jar .vidrio{fill:var(--e-vidrio);stroke:var(--e-borde);stroke-width:.45}
+.jar.atras .vidrio{fill:var(--e-vidrio-2)}
+.jar .liq{fill:var(--e-liquido)} .jar .pol{fill:var(--e-polvo)} .jar .tapa{fill:var(--e-tapa)}
+/* Enlace lista ↔ estante: el frasco de la fila tocada (o señalada) se marca en azul. */
+.jar.marca .vidrio,.jar.marca .lab{stroke:var(--azul);stroke-width:1.2}
+.jar.marca .jar-in{transform:translateY(-1.5px)}
+.escena.con-foco .jar:not(.enfoco) .jar-in{opacity:.35}
+.jar.enfoco .vidrio{stroke:var(--azul);stroke-width:.9}
+.lista .fila.marca{background:var(--azul-suave);box-shadow:inset 4px 0 0 var(--azul)}
+.fila .fq{font-weight:700;color:var(--tinta)}
+
+/* Plano chico para cambiar de sección (seis por fila: cada botón mide 44 px a 320). */
+.plano{display:grid;gap:6px}
+.pl-cap{font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--tinta-2)}
+.pl-fila{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
+.pl-fila.dos{grid-template-columns:1fr 1fr}
+.plano button{position:relative;min-height:46px;border:0;border-radius:10px;background:var(--clase);color:#fff;font-weight:700;font-size:.8rem;padding:0;display:grid;place-items:center;cursor:pointer;box-shadow:var(--sombra)}
+.plano button.claro{color:#14181b}
+.plano button[aria-current="true"]{box-shadow:0 0 0 3px var(--suelo),0 0 0 6px var(--tinta)}
+.plano .lla{position:absolute;right:3px;top:3px;width:14px;height:14px}
+
+/* Frasco en foco: el visor queda arriba del velo y la tarjeta sube desde abajo. */
+.foco-velo{position:fixed;inset:0;z-index:40;background:rgba(9,11,13,.55)}
+body.en-foco .visor{z-index:41}
+body.en-foco .dock{z-index:46}
+.foco{position:fixed;left:0;right:0;bottom:calc(var(--dock) + env(safe-area-inset-bottom,0px));z-index:44;max-width:560px;margin:0 auto;background:var(--placa);
+  border-radius:22px 22px 0 0;box-shadow:var(--sombra-alta);padding:6px max(16px,env(safe-area-inset-right,0px)) 14px max(16px,env(safe-area-inset-left,0px));display:grid;gap:8px;touch-action:none}
+@media (min-width:900px){.foco{bottom:24px;border-radius:22px}}
+.fo-asa{width:44px;height:5px;border-radius:9px;background:var(--linea-2);margin:2px auto 0}
+.fo-cab{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.fo-nav{display:flex;align-items:center;gap:6px}
+.fo-nav .mono{font-size:.85rem;color:var(--tinta-2);min-width:3.2em;text-align:center}
+.fo-nav button[disabled]{opacity:.35}
+.foco h2{font-size:clamp(1.3rem,5.6vw,1.6rem);font-weight:800;outline:none}
+.fo-meta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:.9rem;color:var(--tinta-2)}
+.fo-form{font-size:1.2rem;font-weight:800;color:var(--tinta)}
+.fo-pics{display:flex;gap:4px;flex-wrap:wrap}
+.fo-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px}
+.fo-btns .btn{min-height:54px;font-size:1rem;border-radius:14px}
+.fo-btns .btn .ic{width:22px;height:22px}
+.btn.fo-aux{background:var(--verde);border-color:var(--verde);color:#fff}
+@media (max-width:359px){.fo-btns .btn{font-size:.9rem;padding:8px 8px}}
+@media (max-height:640px){.fo-pics{display:none}.foco{gap:5px;padding-bottom:10px}.fo-btns .btn{min-height:48px}.foco h2{font-size:1.2rem}}
+
+/* ---------- ficha: etiqueta + placas apiladas ---------- */
+dialog.hoja.desde-frasco[open],dialog.hoja.sin-css,dialog.hoja.sin-css::backdrop{animation:none}
+.hc-fila{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hc-tit{flex:1;min-width:0;text-align:center;font-size:.82rem;font-weight:700;color:var(--tinta-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (min-width:900px){.hc-ayuda{display:none}.hcab{cursor:default}}
+.sos-mini{width:44px;height:44px;border-radius:999px;border:0;display:grid;place-items:center;flex:none;background:var(--rojo);color:#fff;cursor:pointer}
+.sos-mini .ic{width:22px;height:22px}
+/* La etiqueta del frasco: la misma que está pegada en el envase. Blanca en los dos temas. */
+.rotulo{width:100%;max-width:460px;margin:0 auto;background:#fff;color:#111;border:2px solid #111;border-radius:6px;box-shadow:var(--sombra-alta);font-size:.86rem;line-height:1.3;touch-action:none}
+.ro-cab{font-size:.6rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;text-align:center;padding:4px 8px 3px;border-bottom:1.5px solid #111}
+.ro-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;padding:7px 9px 6px;border-bottom:1.5px solid #111;align-items:start}
+.rotulo h2{font-size:clamp(1.15rem,5.4vw,1.45rem);font-weight:800;line-height:1.12;outline:none}
+.ro-chico{display:block;font-size:.76rem;margin-top:2px}
+.ro-pics{display:flex;gap:3px;margin-top:6px;align-items:center;flex-wrap:wrap}
+.ro-pics .ghs{width:clamp(32px,10vw,42px);height:clamp(32px,10vw,42px)}
+.ro-pics .palabra{margin-left:4px}
+.ro-rombo .ghs{width:clamp(56px,17vw,74px);height:clamp(56px,17vw,74px)}
+.ro-h{padding:4px 9px;font-size:.74rem;border-bottom:1.5px solid #111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ro-pie{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 9px 5px;font-size:.76rem}
+.ro-pie .mono{font-weight:700}
+.pila{position:relative;scroll-margin-top:78px;touch-action:pan-y;overflow:hidden;margin:0 -6px;padding:0 6px;transition:height .35s var(--ease)}
+.carta{position:absolute;left:6px;top:0;width:calc(100% - 28px);transition:transform .45s var(--ease),opacity .35s var(--ease)}
+.pila.arrastrando .carta{transition:none}
+.carta .cab .n{margin-left:auto;font-size:.76rem;font-weight:700}
+.carta.placa:not(.color){background:var(--placa)}
+.placa.color.carta ul.epp{padding-left:18px;display:grid;gap:6px;margin:0;font-size:1rem}
+.b-lavar{position:relative;margin-top:12px;width:100%;min-height:52px;border:0;border-radius:12px;background:#fff;color:#185c3b;font-weight:800;font-size:1rem;display:flex;align-items:center;justify-content:center;gap:9px;cursor:pointer}
+.b-lavar .ic{width:24px;height:24px}
+.b-lavar .mono{font-size:1.15rem}
+.agua .b-lavar{min-height:46px;margin-top:8px;font-size:.92rem}
+.indice{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.indice::-webkit-scrollbar{display:none}
+.indice button{flex:none;display:inline-flex;align-items:center;gap:7px;min-height:44px;border-radius:999px;border:1px solid var(--linea-2);background:var(--placa);padding:0 14px 0 10px;font-weight:700;font-size:.86rem;cursor:pointer}
+.indice button i{width:14px;height:14px;border-radius:4px;flex:none;box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.14)}
+.indice button[aria-pressed="true"]{background:var(--tinta);color:var(--placa);border-color:var(--tinta)}
+.desliza{text-align:center;margin-top:-4px}
+/* Ficha completa: secciones de la ficha de datos de seguridad, plegables. */
+.completa{display:grid;gap:8px}
+.completa .cab{margin-bottom:2px}
+.completa .simbolo{background:var(--tinta);color:var(--placa)}
+.fc-fuente{font-size:.84rem;color:var(--tinta-2)}
+details.mas.fc{background:var(--placa-2);box-shadow:none}
+details.mas.fc summary{min-height:48px;padding:11px 12px}
+details.mas.fc summary>span{display:flex;align-items:baseline;gap:9px}
+.fc-n{display:inline-grid;place-items:center;min-width:28px;height:24px;border-radius:7px;background:var(--tinta);color:var(--placa);font-size:.78rem}
+details.mas.fc .dc{padding:0 12px 14px;font-size:.96rem}
+.fc-h{font-size:.82rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--tinta-2);margin:6px 0 0}
+.fc-sub{font-size:.9rem;color:var(--tinta-2)}
+.fc-obs{background:var(--amarillo-suave);border-radius:12px;padding:10px 12px;font-size:.92rem}
+
+/* ---------- lavado de 15 minutos ---------- */
+dialog.lavado{border:0;padding:0;margin:0;width:100%;max-width:100%;height:100dvh;max-height:100dvh;background:var(--suelo);color:var(--tinta)}
+dialog.lavado[open]{display:flex;flex-direction:column}
+dialog.lavado::backdrop{background:var(--suelo)}
+.lv-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 4px max(12px,env(safe-area-inset-left,0px));position:relative}
+.lv-top .asa{position:absolute;left:50%;top:4px;transform:translateX(-50%);margin:0}
+.lv-tit{flex:1;text-align:center;font-size:.8rem;font-weight:700;color:var(--tinta-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lv-cuerpo{flex:1;display:flex;flex-direction:column;align-items:center;gap:clamp(8px,2vh,16px);padding:4px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));overflow-y:auto}
+.lv-chip{display:flex;align-items:center;gap:10px;max-width:100%;background:#fff;color:#111;border:2px solid #111;border-radius:6px;padding:6px 12px 6px 8px;box-shadow:var(--sombra)}
+.lv-chip .ghs{width:30px;height:30px}
+.lv-chip b{display:block;font-weight:800;font-size:1rem;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lv-chip small{display:block;font-size:.76rem;font-weight:700}
+.lv-chip>span{min-width:0}
+.lv-chip .via{display:inline-flex;align-items:center;gap:4px;background:var(--verde);color:#fff;border-radius:6px;padding:1px 6px;font-size:.74rem;font-weight:800}
+.lv-ojo{width:32px;height:32px;border-radius:8px;background:var(--verde);color:#fff;display:grid;place-items:center;flex:none}
+.anillo{position:relative;width:min(74vw,42vh,330px);aspect-ratio:1;flex:none}
+.anillo svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.anillo .pista{fill:none;stroke:var(--linea);stroke-width:14}
+.anillo .prog{fill:none;stroke:var(--verde);stroke-width:14;stroke-linecap:round}
+.anillo .punto{transform-origin:100px 100px;transition:transform 1s linear}
+.anillo .punto circle{fill:#fff;stroke:var(--verde);stroke-width:5}
+.anillo.quieto .punto{transition:none}
+.lv-num{position:absolute;inset:0;display:grid;place-content:center;text-align:center;gap:2px}
+.lv-num .mono{font-weight:700;font-size:clamp(3rem,17vw,4.8rem);line-height:1;letter-spacing:-.03em}
+.lv-num small{font-size:.88rem;font-weight:700;color:var(--tinta-2)}
+.lv-estado{font-weight:800;font-size:1.05rem;text-align:center}
+.lv-estado.fin{color:var(--verde)}
+.lv-btns{display:flex;gap:10px;width:100%;max-width:440px}
+.lv-btns .btn{flex:1;min-height:56px;border-radius:14px;font-size:1.05rem}
+.lv-btns .btn+.btn{flex:.8}
+.lv-btns .btn.confirma{background:var(--rojo);border-color:var(--rojo);color:#fff}
+.lv-btns svg.dib{width:20px;height:20px;fill:currentColor}
+.lv-txt{max-width:440px;text-align:center;font-size:.98rem;line-height:1.42}
+.pildora{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(var(--dock) + 12px + env(safe-area-inset-bottom,0px));z-index:35;display:inline-flex;align-items:center;gap:8px;
+  min-height:52px;border:0;border-radius:999px;background:var(--verde);color:#fff;padding:0 18px 0 14px;font-weight:800;box-shadow:var(--sombra-alta);cursor:pointer}
+.pildora .mono{font-size:1.1rem}
+@media (min-width:900px){.pildora{bottom:24px}}
+.pildora[hidden],.foco[hidden],.foco-velo[hidden]{display:none}
+
+@media (prefers-reduced-motion:reduce){
+  .sec,.sec .luz,.jar-in,.carta,.pila,.anillo .punto,.vias::before{transition:none}
+}
+.nw{white-space:nowrap}
+/* Celulares bajos (320 × 568): la etiqueta se compacta para que la instrucción de la vía entre en
+   la primera pantalla. Las frases H siguen completas en "Ficha completa". */
+@media (max-width:619px) and (max-height:640px){
+  .rotulo .ro-h{display:none}
+  .rotulo .ro-cab{padding:2px 8px 1px;font-size:.56rem}
+  .ro-top{padding:5px 8px 5px}
+  .ro-pics{margin-top:4px}
+  .ro-pics .ghs{width:30px;height:30px}
+  .ro-rombo .ghs{width:54px;height:54px}
+  .hcab{padding-top:4px;padding-bottom:4px}
+  .hcab .asa{margin-bottom:2px}
+}

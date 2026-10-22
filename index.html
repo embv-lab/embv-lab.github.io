@@ -17,26 +17,26 @@
 
 <header class="bar">
   <div class="in">
-    <a class="brand" href="#reactivos" aria-label="Laboratorio EMBV, inicio">
+    <a class="brand" href="#estante" aria-label="Laboratorio EMBV, inicio: el estante">
       <img class="logo" src="logo.svg" alt="" width="40" height="40">
       <span><b>Laboratorio EMBV</b><small>Fichas de seguridad</small></span>
     </a>
     <nav class="tabs" aria-label="Secciones de la página">
-      <button type="button" data-v="reactivos"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-magnifying-glass-bold"/></svg>Reactivos</button>
       <button type="button" data-v="estante"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-squares-four-bold"/></svg>Estante</button>
+      <button type="button" data-v="reactivos"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-magnifying-glass-bold"/></svg>Buscar</button>
       <button type="button" data-v="aprender"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-graduation-cap-bold"/></svg>Aprender</button>
     </nav>
-    <button class="sos" id="btn-sos" type="button"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-siren-fill"/></svg><span class="lbl">Emergencia</span></button>
+    <button class="sos" id="btn-sos" type="button" data-v="emergencia"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-siren-fill"/></svg><span class="lbl">Emergencia</span></button>
   </div>
 </header>
 
 <!-- La barra inferior va acá en el código (se ve abajo): así es de lo primero que se alcanza con el
-     teclado. Al final quedaba detrás de las 117 filas de la lista. -->
+     teclado. Al final quedaba detrás de las listas. -->
 <nav class="dock" aria-label="Secciones (barra inferior)">
-  <button type="button" data-v="reactivos"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-magnifying-glass-bold"/></svg>Reactivos</button>
   <button type="button" data-v="estante"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-squares-four-bold"/></svg>Estante</button>
+  <button type="button" data-v="reactivos"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-magnifying-glass-bold"/></svg>Buscar</button>
   <button type="button" data-v="aprender"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-graduation-cap-bold"/></svg>Aprender</button>
-  <button type="button" data-v="emergencia"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-siren-bold"/></svg>Emergencia</button>
+  <button type="button" data-v="emergencia"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-siren-fill"/></svg>Emergencia</button>
 </nav>
 
 <main id="main">
@@ -47,12 +47,36 @@
   <p>Ante una emergencia: <a href="tel:107"><b>107</b></a> · Bomberos <a href="tel:100"><b>100</b></a> · Intoxicaciones <a href="tel:08003330160"><b>0800-333-0160</b></a></p>
 </div>
 
-<!-- Sección del estante: destino del QR de cada cartel -->
-<section class="view" id="v-seccion" hidden></section>
+<!-- Estante: el inicio y el destino de los QR. El cartel impreso de la sección arriba y el estante
+     dibujado de frente abajo (estante.js). -->
+<section class="view" id="v-estante" hidden>
+  <div id="cartel" aria-live="polite"></div>
+  <div class="est-visor-w">
+    <div class="visor" id="visor" role="img" aria-label="Estante visto de frente"><svg class="escena" id="escena" aria-hidden="true"></svg></div>
+    <p class="nota" id="visor-nota"></p>
+  </div>
+  <div class="grupo" id="sec-lista-w" hidden>
+    <h2 class="h3" id="sec-tit">Qué se guarda acá</h2>
+    <ul class="lista" id="sec-lista"></ul>
+  </div>
+  <div class="grupo">
+    <h2 class="h3">Las secciones</h2>
+    <div class="plano" id="plano"></div>
+  </div>
+  <div class="placa grupo">
+    <h2 style="font-size:1.25rem;font-weight:800">¿Se pueden guardar juntos?</h2>
+    <p style="color:var(--tinta-2)">Elegí dos reactivos y el plan de compatibilidad dice si pueden compartir sección.</p>
+    <div class="compat">
+      <select id="ca" aria-label="Primer reactivo"></select>
+      <select id="cb" aria-label="Segundo reactivo"></select>
+    </div>
+    <div id="cverdict" aria-live="polite"></div>
+  </div>
+</section>
 
 <section class="view" id="v-reactivos" hidden>
   <div>
-    <h1 class="vt">Reactivos</h1>
+    <h1 class="vt">Buscar</h1>
     <p class="lede">Buscá un producto para ver qué hacer ante una salpicadura, un derrame o un incendio, y dónde se guarda.</p>
   </div>
   <div class="grupo">
@@ -70,31 +94,6 @@
   <ul class="lista" id="rlist"></ul>
 </section>
 
-<section class="view" id="v-estante" hidden>
-  <div>
-    <h1 class="vt">Estante</h1>
-    <p class="lede">Cada sección guarda una sola clase. Ninguna queda al lado ni encima de otra incompatible. Tocá una sección para ver qué va ahí.</p>
-  </div>
-  <div class="leyenda" aria-label="Colores de las clases">
-    <span><i style="background:var(--c-infl)"></i>Inflamables</span>
-    <span><i style="background:var(--c-ox)"></i>Oxidantes</span>
-    <span><i style="background:var(--c-cor)"></i>Ácidos y bases</span>
-    <span><i style="background:var(--c-tox)"></i>Tóxicos</span>
-    <span><i style="background:var(--c-neu)"></i>Bajo riesgo</span>
-  </div>
-  <div id="shelf" class="grupo" style="gap:22px"></div>
-  <div class="placa grupo">
-    <h2 style="font-size:1.25rem;font-weight:800">¿Se pueden guardar juntos?</h2>
-    <p style="color:var(--tinta-2)">Elegí dos reactivos y el plan de compatibilidad dice si pueden compartir sección.</p>
-    <div class="compat">
-      <select id="ca" aria-label="Primer reactivo"></select>
-      <select id="cb" aria-label="Segundo reactivo"></select>
-    </div>
-    <div id="cverdict" aria-live="polite"></div>
-  </div>
-</section>
-
-<!-- Aprender: lecciones interactivas (aprender.js) -->
 <section class="view" id="v-aprender" hidden></section>
 
 <section class="view" id="v-emergencia" hidden>
@@ -115,11 +114,13 @@
         <div class="cab"><span class="simbolo"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-eye-fill"/></svg></span><h3>Ojos</h3></div>
         <p class="min"><b>15</b> minutos como mínimo</p>
         <p>Al lavaojos o a la canilla, ya. Párpado abierto. Siempre al médico.</p>
+        <button class="b-lavar" type="button" data-lavar="Ojos"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-drop-fill"/></svg>Contar 15 min</button>
       </div>
       <div class="placa color verde">
         <div class="cab"><span class="simbolo"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-hand-palm-fill"/></svg></span><h3>Piel</h3></div>
         <p class="min"><b>15</b> minutos como mínimo</p>
         <p>Sacale la ropa mojada. No frotes, no neutralices, sin cremas.</p>
+        <button class="b-lavar" type="button" data-lavar="Piel"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-drop-fill"/></svg>Contar 15 min</button>
       </div>
     </div>
   </div>
@@ -151,7 +152,14 @@
   <p id="ver-datos"></p>
 </footer>
 
+<!-- Frasco en foco: el frasco tocado se acerca y se lee qué es; desde acá se entra a la ficha. -->
+<div class="foco-velo" id="foco-velo" hidden></div>
+<div class="foco" id="foco" role="group" aria-labelledby="foco-t" hidden></div>
+
+<button class="pildora" id="pildora" type="button" hidden aria-label="Volver al contador de lavado"><svg class="ic" aria-hidden="true"><use href="iconos.svg#i-drop-fill"/></svg><span>Lavado</span><span class="mono">15:00</span></button>
+
 <dialog class="hoja" id="ficha" aria-labelledby="fh-t"></dialog>
+<dialog class="lavado" id="lavado" aria-label="Lavado de 15 minutos"></dialog>
 
 <script type="module" src="app.js"></script>
 </body>

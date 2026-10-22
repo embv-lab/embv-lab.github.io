@@ -7,16 +7,24 @@ Bella Vista. Es la página a la que llevan los QR de los carteles del estante.
 
 ## Qué muestra
 
-- **Reactivos:** las 117 fichas resumidas (peligros, primeros auxilios por vía de exposición,
-  derrame, incendio, protección personal, eliminación y dónde se guarda).
-- **Estante:** el plan de las 12 secciones y el control de compatibilidad entre dos reactivos.
-- **Emergencia:** teléfonos, los tres pasos y la búsqueda rápida de un producto.
+Cuatro pestañas (abajo en el celular, arriba en la compu):
+
+- **Estante** (inicio): la vista que abre el QR de cada cartel. Arriba, el cartel impreso de la
+  sección; abajo, el estante dibujado de frente, con un frasco por envase y la fórmula en cada
+  etiqueta. Tocar un frasco lo acerca ("frasco en foco") y desde ahí se entra a su ficha; la lista de
+  la sección abre la ficha de una. Debajo, el plano de las secciones y el control de compatibilidad
+  entre dos reactivos.
+- **Buscar:** las 117 fichas con búsqueda y filtros.
+- **Ficha de cada reactivo:** la etiqueta del frasco y las placas de seguridad apiladas (primeros
+  auxilios por vía, derrame, incendio, protección) y la **ficha completa** con todo lo que hay en
+  los datos (frases H y P, manipulación, eliminación, inventario y las secciones de la ficha de 16
+  secciones cuando existe). Desde Ojos o Piel se lanza el **contador de lavado de 15 minutos**.
+- **Emergencia:** teléfonos, "primero, agua" con el contador de 15 minutos, los tres pasos y la
+  búsqueda rápida de un producto.
 - **Aprender:** seis lecciones cortas e interactivas, basadas en el manual de capacitación: cómo
   leer una etiqueta, los 9 pictogramas, el rombo de colores, un juego de compatibilidad con pares
   reales del estante, las reglas del laboratorio y una autoevaluación de diez preguntas. El
   progreso se guarda sólo en el navegador de quien la usa (no es un registro de asistencia).
-- **Sección:** la vista que abre el QR de cada cartel. Qué va ahí, sus peligros y qué no se
-  puede guardar en esa sección.
 
 No guarda nada. El registro del avance (etiquetado, reubicación, capacitación, residuos) está en
 la versión privada de la página, dentro del repositorio privado `embv-laboratorio`.
@@ -30,6 +38,8 @@ la versión privada de la página, dentro del repositorio privado `embv-laborato
 | Material didáctico | `…/#MATERIAL` |
 | Ficha de un reactivo | `…/#R001` … `#R117` |
 | Emergencia | `…/#emergencia` |
+| Estante entero / Buscar | `…/#estante` · `…/#reactivos` (también `#buscar`) |
+| Lección de Aprender | `…/#aprender` · `…/#aprender/etiqueta` (y las demás lecciones) |
 
 Los enlaces no distinguen mayúsculas (`#e1-4` también funciona). Si algún día la página pasa a un
 dominio propio, GitHub Pages redirige las direcciones `github.io` al dominio nuevo, así que los QR
@@ -41,7 +51,9 @@ ya impresos siguen andando.
 |---|---|
 | `index.html` | Estructura de la página. |
 | `estilos.css` | Todo el diseño (ver `DESIGN.md`). |
-| `app.js` | Lógica: búsqueda, fichas, estante, secciones y navegación. |
+| `app.js` | Lógica: navegación, búsqueda, ficha (etiqueta, placas apiladas, ficha completa), compatibilidad y emergencia. |
+| `estante.js` | El estante: cartel de la sección, dibujo de frente, cámara, frasco en foco y lista enlazada. |
+| `lavado.js` | El contador de lavado de 15 minutos y su píldora. |
 | `aprender.js` | Las seis lecciones de Aprender. Su contenido sale de los documentos 07, 08, 09, 11, 15, 16 y 17. |
 | `iconos.svg` | Pictogramas SGA oficiales (dominio público) e íconos Phosphor (MIT). |
 | `tipografia/` | Overpass y Overpass Mono (variables, subconjunto latino) y su licencia OFL. |
@@ -54,7 +66,7 @@ ya impresos siguen andando.
 
 ## Cómo se actualiza
 
-- **Diseño o funciones:** editar `index.html`, `estilos.css` o `app.js`, commit y push. GitHub Pages
+- **Diseño o funciones:** editar `index.html`, `estilos.css`, `app.js`, `estante.js` o `lavado.js`, commit y push. GitHub Pages
   publica solo en uno o dos minutos.
 - **Datos químicos:** la única fuente de verdad es `fuentes/datos_reactivos.py`, en el repositorio
   privado. Después de cambiarla, correr `pagina/export.py` (ver `docs/PAGINA.md` de ese repo),
@@ -62,8 +74,9 @@ ya impresos siguen andando.
 - **Siempre que cambie algún archivo:** subir el número de `CACHE` en `sw.js` (`embv-v5` → `embv-v6`)
   para que los celulares que ya la abrieron descarguen la versión nueva.
 - **Antes de publicar:** con la página servida en local, `node herramientas/auditoria.mjs`. Tiene que
-  terminar en "Todo limpio": revisa desbordes, botones chicos, contraste en los dos temas, errores, y
-  que los primeros auxilios de la ficha entren en la primera pantalla de un celular.
+  terminar en "Todo limpio": revisa desbordes, botones chicos, contraste en los dos temas, errores,
+  que los primeros auxilios de la ficha entren en la primera pantalla de un celular, el frasco en
+  foco (botones a la vista, etiqueta sin tapar, Esc y "atrás") y el contador de lavado.
 
 Para probarla en la compu hace falta un servidor local, porque abrir `index.html` con doble clic no
 carga los datos: `python -m http.server` en esta carpeta, o sin Python,
