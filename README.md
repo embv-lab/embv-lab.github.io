@@ -71,7 +71,7 @@ ya impresos siguen andando.
 - **Datos químicos:** la única fuente de verdad es `fuentes/datos_reactivos.py`, en el repositorio
   privado. Después de cambiarla, correr `pagina/export.py` (ver `docs/PAGINA.md` de ese repo),
   copiar el `data.json` resultante sobre `datos/reactivos.json` y actualizar `ACTUALIZADO` en `app.js`.
-- **Siempre que cambie algún archivo:** subir el número de `CACHE` en `sw.js` (`embv-v5` → `embv-v6`)
+- **Siempre que cambie algún archivo:** subir el número de `CACHE` en `sw.js` (`embv-v6` → `embv-v7`)
   para que los celulares que ya la abrieron descarguen la versión nueva.
 - **Antes de publicar:** con la página servida en local, `node herramientas/auditoria.mjs`. Tiene que
   terminar en "Todo limpio": revisa desbordes, botones chicos, contraste en los dos temas, errores,
@@ -88,7 +88,12 @@ carga los datos: `python -m http.server` en esta carpeta, o sin Python,
   enlaces de la tabla de arriba.
 - Sumar un segundo dueño a la organización `embv-lab`.
 - Automatizar la copia de `datos/reactivos.json` desde el repositorio privado.
-- La lista completa y vigente está en `docs/revisiones/2026-10-20-web-publica.md` del repositorio
+- **Probar en celulares reales** (Android e iPhone): gestos del estante y de la ficha, contador de
+  lavado (pantalla encendida y vibración) y fluidez con los 153 frascos dibujados.
+- **Textos de incendio y derrame del ácido sulfúrico (R050–R052) y de incendio de la cal viva
+  (R043):** salen con el texto de los metales que reaccionan con agua. Se corrigen en el repositorio
+  privado (`fuentes/gen_fds.py`), no acá.
+- La lista completa y vigente está en `docs/revisiones/2026-10-22-web-estante.md` del repositorio
   privado.
 
 ## Datos

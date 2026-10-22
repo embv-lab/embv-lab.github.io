@@ -18,10 +18,26 @@ de seguridad). La dirección de diseño acordada está en `.impeccable/briefs/in
   privado.
 - Lo que muestra la web tiene que coincidir con la etiqueta y la ficha impresas.
 - Los colores de seguridad (verde, rojo, amarillo, azul) significan algo: no usarlos de adorno.
-- En cada cambio de archivos, subir `CACHE` en `sw.js` (`embv-v5` → `embv-v6`) y, si cambian los
+- En cada cambio de archivos, subir `CACHE` en `sw.js` (`embv-v6` → `embv-v7`) y, si cambian los
   datos, `ACTUALIZADO` en `app.js`. Si se agrega un archivo, sumarlo a `ARCHIVOS` en `sw.js`.
 - `_config.yml` excluye de la publicación los archivos de trabajo (`README.md`, `PRODUCT.md`,
   `DESIGN.md`, `CLAUDE.md`, `herramientas/`, `.impeccable/`).
+
+- Sólo se animan `transform` y `opacity` (nada de `width`, `height`, `padding` ni `margin`) y nada de
+  `backdrop-filter` sobre lo que se mueve. Con `prefers-reduced-motion`, todo instantáneo.
+
+## Cómo está armada
+
+`app.js` (navegación por hash, Buscar, ficha con etiqueta y placas apiladas, ficha completa,
+compatibilidad, emergencia), `estante.js` (cartel de la sección, estante en SVG con un frasco por
+envase, cámara, frasco en foco, lista enlazada), `lavado.js` (contador de 15 minutos y su píldora),
+`aprender.js` (lecciones). Detalle visual en `DESIGN.md`.
+
+## Retomar
+
+Estado, decisiones y pendientes al 22/10/2026: `docs/revisiones/2026-10-22-web-estante.md` del
+repositorio privado `WiseMKT/embv-laboratorio`. La crítica de diseño que originó la versión actual
+está en `.impeccable/critique/`.
 
 ## Probar
 
