@@ -422,7 +422,8 @@ footer p{max-width:75ch}
 .explica .cuenta{margin-bottom:8px}
 .nav-pasos{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px}
 .puntos{display:flex;gap:6px}
-.puntos i,.marcador i{width:9px;height:9px;border-radius:99px;background:var(--linea-2);transition:background .3s,width .3s var(--ease)}
+/* Sólo el color se anima: animar el ancho recalculaba el layout de la fila en cada cuadro. */
+.puntos i,.marcador i{width:9px;height:9px;border-radius:99px;background:var(--linea-2);transition:background .3s}
 .puntos i.on,.marcador i.on{width:24px;background:var(--tinta)}
 .puntos i.ya,.marcador i.ya{background:var(--verde)}
 .marcador i.mal{background:var(--rojo)}
